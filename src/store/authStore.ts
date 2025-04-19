@@ -11,8 +11,8 @@ interface AuthState {
   isAdmin: () => boolean;
   isBookOwner: () => boolean;
   isReader: () => boolean;
-  login: (data: RegisterRequest) => Promise<void>;
-  signup: (userData: LoginRequest) => Promise<void>;
+  login: (data: LoginRequest) => Promise<void>;
+  signup: (userData: RegisterRequest) => Promise<void>;
   logout: () => Promise<void>;
   initialize: () => Promise<void>;
   clearErrors: () => void;
@@ -33,10 +33,10 @@ const useAuthStore = create<AuthState>()(
       isBookOwner: () => get().user?.role === "bookOwner",
       isReader: () => get().user?.role === "reader",
 
-      login: async (data: RegisterRequest) => {
+      login: async (data) => {
         set({ isLoading: true, error: null });
         try {
-          const user = await AuthService.postAuthRegister(data);
+          const user = await AuthService.postAuth(data);
           set({ user, isLoading: false });
           return user;
         } catch (error) {
@@ -51,7 +51,7 @@ const useAuthStore = create<AuthState>()(
       signup: async (userData) => {
         set({ isLoading: true, error: null });
         try {
-          const user = await AuthService.postAuth(userData);
+          const user = await AuthService.postAuthRegister(userData);
           set({ user, isLoading: false });
           return user;
         } catch (error) {
@@ -81,7 +81,7 @@ const useAuthStore = create<AuthState>()(
         try {
           const user = await AuthService.postAuthRefresh({
             refreshToken: localStorage.getItem("refreshToken") || "",
-            token: ""
+            token: "",
           });
           set({ user, isLoading: false });
         } catch {

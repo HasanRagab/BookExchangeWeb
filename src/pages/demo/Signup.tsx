@@ -5,9 +5,10 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
-import { AuthService, RegisterRequest } from "@/api"
+import useAuthStore from "@/store/authStore"
 
 export default function SignupPage() {
+  const { signup } = useAuthStore()
   const handleSignup = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const formData = new FormData(event.currentTarget)
@@ -17,10 +18,9 @@ export default function SignupPage() {
       firstName: formData.get("firstName") as string || "",
       lastName: formData.get("lastName") as string || "",
       role: formData.get("role") as string || "",
-    } satisfies RegisterRequest;
+    };
     try {
-      console.log(JSON.stringify(newUser));
-      AuthService.postAuthRegister(newUser)
+      await signup(newUser)
     } catch (error) {
       console.error("Signup failed:", error);
     }

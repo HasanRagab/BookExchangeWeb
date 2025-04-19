@@ -5,8 +5,24 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
+import useAuthStore from "@/store/authStore"
 
 export default function LoginPage() {
+  const { login } = useAuthStore();
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+    const data = { email, password };
+    try {
+      await login(data);
+      window.location.href = "/dashboard";
+    } catch (error) {
+      console.error("Login failed:", error);
+    }
+  };
   return (
     <div className="container flex items-center justify-center min-h-screen py-12 px-4">
       <Card className="w-full max-w-md">
@@ -17,18 +33,33 @@ export default function LoginPage() {
             </div>
           </div>
           <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
-          <CardDescription>Enter your credentials to access your account</CardDescription>
+          <CardDescription>
+            Enter your credentials to access your account
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <form action="#" className="space-y-4">
+          <form
+            onSubmit={handleSubmit}
+            method="POST"
+            className="space-y-4"
+          >
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" name="email" type="email" placeholder="your.email@example.com" required />
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="your.email@example.com"
+                required
+              />
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">Password</Label>
-                <Link to="/forgot-password" className="text-sm text-primary hover:underline">
+                <Link
+                  to="/forgot-password"
+                  className="text-sm text-primary hover:underline"
+                >
                   Forgot password?
                 </Link>
               </div>
@@ -44,7 +75,9 @@ export default function LoginPage() {
               <Separator className="w-full" />
             </div>
             <div className="relative flex justify-center">
-              <span className="bg-card px-2 text-sm text-muted-foreground">Or continue with</span>
+              <span className="bg-card px-2 text-sm text-muted-foreground">
+                Or continue with
+              </span>
             </div>
           </div>
         </CardContent>
@@ -58,5 +91,5 @@ export default function LoginPage() {
         </CardFooter>
       </Card>
     </div>
-  )
+  );
 }
