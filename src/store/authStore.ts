@@ -1,6 +1,6 @@
+import { AuthService, LoginRequest, RegisterRequest } from "@/api";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { fakeAuthService } from "@/services/authService";
 
 interface AuthState {
   user: { role: string } | null;
@@ -11,8 +11,8 @@ interface AuthState {
   isAdmin: () => boolean;
   isBookOwner: () => boolean;
   isReader: () => boolean;
-  login: (email: string, password: string) => Promise<{ role: string }>;
-  signup: (userData: { firstName: string; lastName: string; email: string; password: string; role: "bookOwner" | "reader" }) => Promise<{ role: "bookOwner" | "reader" }>;
+  login: (data: RegisterRequest) => Promise<void>;
+  signup: (userData: LoginRequest) => Promise<void>;
   logout: () => Promise<void>;
   initialize: () => Promise<void>;
   clearErrors: () => void;
@@ -25,45 +25,40 @@ const useAuthStore = create<AuthState>()(
       isLoading: false,
       error: null,
 
-      // Check if user is authenticated
       isAuthenticated: () => !!get().user,
 
-      // Get user role
       getUserRole: () => get().user?.role || "guest",
 
-      // Role-based checks
       isAdmin: () => get().user?.role === "admin",
       isBookOwner: () => get().user?.role === "bookOwner",
       isReader: () => get().user?.role === "reader",
 
-      // Login
-      login: async (email, password) => {
+      login: async (data: RegisterRequest) => {
         set({ isLoading: true, error: null });
         try {
-          const user = await fakeAuthService.login(email, password);
+          const user = await AuthService.postAuthRegister(data);
           set({ user, isLoading: false });
           return user;
         } catch (error) {
-          set({ error: error instanceof Error ? error.message : String(error), isLoading: false });
+          set({
+            error: error instanceof Error ? error.message : String(error),
+            isLoading: false,
+          });
           throw error;
         }
       },
 
-      // Signup
       signup: async (userData) => {
         set({ isLoading: true, error: null });
         try {
-          const { firstName, lastName, email, password, role } = userData;
-          const user = await fakeAuthService.signup({ firstName, lastName, email, password, role: role as "bookOwner" | "reader" });
-          // Only set the user if they're auto-approved (readers)
-          if (user.role === "reader") {
-            set({ user, isLoading: false });
-          } else {
-            set({ isLoading: false });
-          }
+          const user = await AuthService.postAuth(userData);
+          set({ user, isLoading: false });
           return user;
         } catch (error) {
-          set({ error: error instanceof Error ? error.message : String(error), isLoading: false });
+          set({
+            error: error instanceof Error ? error.message : String(error),
+            isLoading: false,
+          });
           throw error;
         }
       },
@@ -72,18 +67,22 @@ const useAuthStore = create<AuthState>()(
       logout: async () => {
         set({ isLoading: true });
         try {
-          await fakeAuthService.logout();
           set({ user: null, isLoading: false, error: null });
         } catch (error) {
-          set({ error: error instanceof Error ? error.message : String(error), isLoading: false });
+          set({
+            error: error instanceof Error ? error.message : String(error),
+            isLoading: false,
+          });
         }
       },
 
-      // Initialize - check if user is already logged in
       initialize: async () => {
         set({ isLoading: true });
         try {
-          const user = await fakeAuthService.getCurrentUser();
+          const user = await AuthService.postAuthRefresh({
+            refreshToken: localStorage.getItem("refreshToken") || "",
+            token: ""
+          });
           set({ user, isLoading: false });
         } catch {
           set({ isLoading: false });
@@ -94,7 +93,7 @@ const useAuthStore = create<AuthState>()(
       clearErrors: () => set({ error: null }),
     }),
     {
-      name: "bookswap-auth-storage",
+      name: "bookSwap-auth-storage",
       partialize: (state) => ({ user: state.user }),
     }
   )

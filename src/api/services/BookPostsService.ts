@@ -34,6 +34,37 @@ export class BookPostsService {
         });
     }
     /**
+     * @param genre
+     * @param minPrice
+     * @param maxPrice
+     * @param language
+     * @param sortBy
+     * @param sortDirection
+     * @returns any OK
+     * @throws ApiError
+     */
+    public static getApiBookPostsFilter(
+        genre: string = null,
+        minPrice: number = null,
+        maxPrice: number = null,
+        language: string = null,
+        sortBy: string = null,
+        sortDirection: string = null,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/BookPosts/filter',
+            query: {
+                'genre': genre,
+                'minPrice': minPrice,
+                'maxPrice': maxPrice,
+                'language': language,
+                'sortBy': sortBy,
+                'sortDirection': sortDirection,
+            },
+        });
+    }
+    /**
      * @param id
      * @returns any OK
      * @throws ApiError
