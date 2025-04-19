@@ -5,8 +5,27 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
+import { AuthService, RegisterRequest } from "@/api"
 
 export default function SignupPage() {
+  const handleSignup = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const formData = new FormData(event.currentTarget)
+    const newUser = {
+      email: formData.get("email") as string || "",
+      password: formData.get("password") as string || "",
+      firstName: formData.get("firstName") as string || "",
+      lastName: formData.get("lastName") as string || "",
+      role: formData.get("role") as string || "",
+    } satisfies RegisterRequest;
+    try {
+      console.log(JSON.stringify(newUser));
+      AuthService.postAuthRegister(newUser)
+    } catch (error) {
+      console.error("Signup failed:", error);
+    }
+  }
+
   return (
     <div className="container flex items-center justify-center min-h-screen py-12 px-4">
       <Card className="w-full max-w-md">
@@ -20,7 +39,7 @@ export default function SignupPage() {
           <CardDescription>Enter your information to create your account</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <form action="#" className="space-y-4">
+          <form onSubmit={handleSignup} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="firstName">First name</Label>
@@ -43,6 +62,15 @@ export default function SignupPage() {
               <Label htmlFor="confirmPassword">Confirm password</Label>
               <Input id="confirmPassword" name="confirmPassword" type="password" required />
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="role">Role</Label>
+              <select id="role" name="role" className="w-full border rounded p-2">
+                <option value="Reader">Reader</option>
+                <option value="BookOwner">Book Owner</option>
+              </select>
+            </div>
+
             <Button type="submit" className="w-full">
               Create Account
             </Button>

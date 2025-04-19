@@ -8,6 +8,7 @@ const Home = lazy(() => import("./pages/demo/Home"));
 const BookBrowse = lazy(() => import("./pages/BookBrowse"));
 const BookSearch = lazy(() => import("./pages/BookSearch"));
 const Login = lazy(() => import("./pages/demo/Login"));
+const Signup = lazy(() => import("./pages/demo/Signup"));
 const BookDetails = lazy(() => import("./pages/BookDetails"));
 // const Register = lazy(() => import("./pages/Register"));
 // const NotFound = lazy(() => import("./pages/NotFound"));
@@ -94,10 +95,10 @@ const routes = [
         path: "login",
         element: withSuspense(Login),
       },
-      // {
-      //   path: "register",
-      //   element: withSuspense(Register),
-      // },
+      {
+        path: "signup",
+        element: withSuspense(Signup),
+      },
       // {
       //   path: "*",
       //   element: withSuspense(NotFound),
