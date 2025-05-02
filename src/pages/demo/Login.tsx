@@ -6,10 +6,11 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import useAuthStore from "@/store/authStore"
+import { useNavigate } from "react-router-dom"
 
 export default function LoginPage() {
   const { login } = useAuthStore();
-
+  const navigate = useNavigate();
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
@@ -18,7 +19,7 @@ export default function LoginPage() {
     const data = { email, password };
     try {
       await login(data);
-      window.location.href = "/dashboard";
+      navigate("/explore");
     } catch (error) {
       console.error("Login failed:", error);
     }

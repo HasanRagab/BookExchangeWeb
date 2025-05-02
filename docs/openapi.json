@@ -133,8 +133,7 @@
                     "type": "object",
                     "properties": {
                       "coverImage": {
-                        "type": "string",
-                        "format": "binary"
+                        "$ref": "#/components/schemas/IFormFile"
                       }
                     }
                   }
@@ -618,6 +617,10 @@
             "type": "string"
           }
         }
+      },
+      "IFormFile": {
+        "type": "string",
+        "format": "binary"
       },
       "LoginRequest": {
         "required": ["email", "password"],

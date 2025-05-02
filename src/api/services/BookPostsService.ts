@@ -5,6 +5,7 @@
 import type { BookLikeCreateDto } from '../models/BookLikeCreateDto';
 import type { BookPostEditDto } from '../models/BookPostEditDto';
 import type { CommentCreateDto } from '../models/CommentCreateDto';
+import type { IFormFile } from '../models/IFormFile';
 import type { ReplyCreateDto } from '../models/ReplyCreateDto';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
@@ -46,7 +47,7 @@ export class BookPostsService {
             AvailableTo?: string;
             BorrowPrice?: number;
         } & {
-            coverImage?: Blob;
+            coverImage?: IFormFile;
         }),
     ): CancelablePromise<any> {
         return __request(OpenAPI, {

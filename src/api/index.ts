@@ -12,6 +12,7 @@ export type { BookPostEditDto } from './models/BookPostEditDto';
 export type { BorrowRequestActionDto } from './models/BorrowRequestActionDto';
 export type { BorrowRequestCreateDto } from './models/BorrowRequestCreateDto';
 export type { CommentCreateDto } from './models/CommentCreateDto';
+export type { IFormFile } from './models/IFormFile';
 export type { LoginRequest } from './models/LoginRequest';
 export type { RegisterRequest } from './models/RegisterRequest';
 export type { ReplyCreateDto } from './models/ReplyCreateDto';
