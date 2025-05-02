@@ -1,23 +1,18 @@
 {
-  "openapi": "3.0.1",
+  "openapi": "3.0.4",
   "info": {
-    "title": "BookExchange | v1",
+    "title": "BookSwap | v1",
     "version": "1.0.0"
   },
   "servers": [
     {
-      "url": "https://0544-197-52-144-32.ngrok-free.app/"
-    },
-    {
-      "url": "http://localhost:5021"
+      "url": "http://localhost:5247"
     }
   ],
   "paths": {
     "/Auth": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "requestBody": {
           "content": {
             "application/json": {
@@ -33,38 +28,6 @@
             "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/LoginRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/Auth/refresh": {
-      "post": {
-        "tags": [
-          "Auth"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RefreshTokenRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RefreshTokenRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/RefreshTokenRequest"
               }
             }
           },
@@ -79,9 +42,7 @@
     },
     "/Auth/register": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "requestBody": {
           "content": {
             "application/json": {
@@ -109,31 +70,9 @@
         }
       }
     },
-    "/api/BookLikes/like": {
-      "post": {
-        "tags": [
-          "BookLikes"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/BookLikeCreateDto"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/BookLikeCreateDto"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/BookLikeCreateDto"
-              }
-            }
-          },
-          "required": true
-        },
+    "/api/BookPosts/available-books": {
+      "get": {
+        "tags": ["BookPosts"],
         "responses": {
           "200": {
             "description": "OK"
@@ -143,9 +82,7 @@
     },
     "/api/BookPosts": {
       "get": {
-        "tags": [
-          "BookPosts"
-        ],
+        "tags": ["BookPosts"],
         "responses": {
           "200": {
             "description": "OK"
@@ -153,24 +90,55 @@
         }
       },
       "post": {
-        "tags": [
-          "BookPosts"
-        ],
+        "tags": ["BookPosts"],
         "requestBody": {
           "content": {
-            "application/json": {
+            "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/BookPostCreateDto"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/BookPostCreateDto"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/BookPostCreateDto"
+                "type": "object",
+                "allOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "BookOwnerId": {
+                        "type": "string"
+                      },
+                      "Title": {
+                        "type": "string"
+                      },
+                      "Genre": {
+                        "type": "string"
+                      },
+                      "ISBN": {
+                        "type": "string"
+                      },
+                      "Language": {
+                        "type": "string"
+                      },
+                      "AvailableFrom": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "AvailableTo": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "BorrowPrice": {
+                        "type": "number",
+                        "format": "double"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "coverImage": {
+                        "type": "string",
+                        "format": "binary"
+                      }
+                    }
+                  }
+                ]
               }
             }
           },
@@ -183,60 +151,31 @@
         }
       }
     },
-    "/api/BookPosts/filter": {
+    "/api/BookPosts/available": {
       "get": {
-        "tags": [
-          "BookPosts"
-        ],
+        "tags": ["BookPosts"],
         "parameters": [
           {
-            "name": "genre",
+            "name": "Genre",
             "in": "query",
             "schema": {
-              "type": "string",
-              "default": null
+              "type": "string"
             }
           },
           {
-            "name": "minPrice",
+            "name": "MinBorrowPrice",
             "in": "query",
             "schema": {
               "type": "number",
-              "format": "double",
-              "default": null
+              "format": "double"
             }
           },
           {
-            "name": "maxPrice",
+            "name": "MaxBorrowPrice",
             "in": "query",
             "schema": {
               "type": "number",
-              "format": "double",
-              "default": null
-            }
-          },
-          {
-            "name": "language",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "default": null
-            }
-          },
-          {
-            "name": "sortBy",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "default": null
-            }
-          },
-          {
-            "name": "sortDirection",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "default": null
+              "format": "double"
             }
           }
         ],
@@ -249,9 +188,7 @@
     },
     "/api/BookPosts/{id}": {
       "get": {
-        "tags": [
-          "BookPosts"
-        ],
+        "tags": ["BookPosts"],
         "parameters": [
           {
             "name": "id",
@@ -270,9 +207,7 @@
         }
       },
       "put": {
-        "tags": [
-          "BookPosts"
-        ],
+        "tags": ["BookPosts"],
         "parameters": [
           {
             "name": "id",
@@ -288,17 +223,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/BookPostUpdateDto"
+                "$ref": "#/components/schemas/BookPostEditDto"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/BookPostUpdateDto"
+                "$ref": "#/components/schemas/BookPostEditDto"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/BookPostUpdateDto"
+                "$ref": "#/components/schemas/BookPostEditDto"
               }
             }
           },
@@ -311,9 +246,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "BookPosts"
-        ],
+        "tags": ["BookPosts"],
         "parameters": [
           {
             "name": "id",
@@ -332,43 +265,9 @@
         }
       }
     },
-    "/api/Comments": {
-      "post": {
-        "tags": [
-          "Comments"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CommentCreateDto"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CommentCreateDto"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/CommentCreateDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/Comments/book/{bookPostId}": {
+    "/api/BookPosts/{bookPostId}/comments": {
       "get": {
-        "tags": [
-          "Comments"
-        ],
+        "tags": ["BookPosts"],
         "parameters": [
           {
             "name": "bookPostId",
@@ -387,11 +286,90 @@
         }
       }
     },
-    "/api/Replies": {
+    "/api/BookPosts/comments": {
       "post": {
-        "tags": [
-          "Replies"
+        "tags": ["BookPosts"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommentCreateDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommentCreateDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommentCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/BookPosts/likes": {
+      "post": {
+        "tags": ["BookPosts"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BookLikeCreateDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BookLikeCreateDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/BookLikeCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/BookPosts/{bookPostId}/likes": {
+      "get": {
+        "tags": ["BookPosts"],
+        "parameters": [
+          {
+            "name": "bookPostId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
         ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/BookPosts/replies": {
+      "post": {
+        "tags": ["BookPosts"],
         "requestBody": {
           "content": {
             "application/json": {
@@ -419,11 +397,9 @@
         }
       }
     },
-    "/api/Replies/comment/{commentId}": {
+    "/api/BookPosts/comments/{commentId}/replies": {
       "get": {
-        "tags": [
-          "Replies"
-        ],
+        "tags": ["BookPosts"],
         "parameters": [
           {
             "name": "commentId",
@@ -435,6 +411,98 @@
             }
           }
         ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/BorrowRequests/book/{bookId}": {
+      "get": {
+        "tags": ["BorrowRequests"],
+        "parameters": [
+          {
+            "name": "bookId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/BorrowRequests": {
+      "post": {
+        "tags": ["BorrowRequests"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BorrowRequestCreateDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BorrowRequestCreateDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/BorrowRequestCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/BorrowRequests/{requestId}/action": {
+      "post": {
+        "tags": ["BorrowRequests"],
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BorrowRequestActionDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BorrowRequestActionDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/BorrowRequestActionDto"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "description": "OK"
@@ -460,7 +528,7 @@
           }
         }
       },
-      "BookPostCreateDto": {
+      "BookPostEditDto": {
         "type": "object",
         "properties": {
           "bookOwnerId": {
@@ -478,6 +546,10 @@
           "language": {
             "type": "string"
           },
+          "publicationDate": {
+            "type": "string",
+            "format": "date-time"
+          },
           "availableFrom": {
             "type": "string",
             "format": "date-time"
@@ -489,35 +561,46 @@
           "borrowPrice": {
             "type": "number",
             "format": "double"
+          },
+          "isApprovedByAdmin": {
+            "type": "boolean"
+          },
+          "isAvailable": {
+            "type": "boolean"
+          },
+          "isBorrowed": {
+            "type": "boolean"
           }
         }
       },
-      "BookPostUpdateDto": {
+      "BorrowRequestActionDto": {
         "type": "object",
         "properties": {
-          "title": {
+          "action": {
             "type": "string"
           },
-          "genre": {
+          "bookOwnerId": {
+            "type": "string"
+          }
+        }
+      },
+      "BorrowRequestCreateDto": {
+        "type": "object",
+        "properties": {
+          "bookId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "borrowerId": {
             "type": "string"
           },
-          "isbn": {
-            "type": "string"
-          },
-          "language": {
-            "type": "string"
-          },
-          "availableFrom": {
+          "startDate": {
             "type": "string",
             "format": "date-time"
           },
-          "availableTo": {
+          "endDate": {
             "type": "string",
             "format": "date-time"
-          },
-          "borrowPrice": {
-            "type": "number",
-            "format": "double"
           }
         }
       },
@@ -537,10 +620,7 @@
         }
       },
       "LoginRequest": {
-        "required": [
-          "email",
-          "password"
-        ],
+        "required": ["email", "password"],
         "type": "object",
         "properties": {
           "email": {
@@ -551,29 +631,7 @@
           }
         }
       },
-      "RefreshTokenRequest": {
-        "required": [
-          "token",
-          "refreshToken"
-        ],
-        "type": "object",
-        "properties": {
-          "token": {
-            "type": "string"
-          },
-          "refreshToken": {
-            "type": "string"
-          }
-        }
-      },
       "RegisterRequest": {
-        "required": [
-          "email",
-          "password",
-          "firstName",
-          "lastName",
-          "role"
-        ],
         "type": "object",
         "properties": {
           "email": {
@@ -615,16 +673,10 @@
       "name": "Auth"
     },
     {
-      "name": "BookLikes"
-    },
-    {
       "name": "BookPosts"
     },
     {
-      "name": "Comments"
-    },
-    {
-      "name": "Replies"
+      "name": "BorrowRequests"
     }
   ]
 }

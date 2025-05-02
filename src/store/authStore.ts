@@ -1,4 +1,5 @@
 import { AuthService, LoginRequest, RegisterRequest } from "@/api";
+import axios from "axios";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -14,7 +15,6 @@ interface AuthState {
   login: (data: LoginRequest) => Promise<void>;
   signup: (userData: RegisterRequest) => Promise<void>;
   logout: () => Promise<void>;
-  initialize: () => Promise<void>;
   clearErrors: () => void;
 }
 
@@ -36,7 +36,9 @@ const useAuthStore = create<AuthState>()(
       login: async (data) => {
         set({ isLoading: true, error: null });
         try {
-          const user = await AuthService.postAuth(data);
+          // const user = await AuthService.postAuth(data);
+          const res = await axios.post("http://localhost:5247/Auth", data);
+          const user = res.data;
           set({ user, isLoading: false });
           return user;
         } catch (error) {
@@ -63,7 +65,6 @@ const useAuthStore = create<AuthState>()(
         }
       },
 
-      // Logout
       logout: async () => {
         set({ isLoading: true });
         try {
@@ -76,20 +77,6 @@ const useAuthStore = create<AuthState>()(
         }
       },
 
-      initialize: async () => {
-        set({ isLoading: true });
-        try {
-          const user = await AuthService.postAuthRefresh({
-            refreshToken: localStorage.getItem("refreshToken") || "",
-            token: "",
-          });
-          set({ user, isLoading: false });
-        } catch {
-          set({ isLoading: false });
-        }
-      },
-
-      // Clear errors
       clearErrors: () => set({ error: null }),
     }),
     {

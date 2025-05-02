@@ -8,16 +8,14 @@ export { OpenAPI } from './core/OpenAPI';
 export type { OpenAPIConfig } from './core/OpenAPI';
 
 export type { BookLikeCreateDto } from './models/BookLikeCreateDto';
-export type { BookPostCreateDto } from './models/BookPostCreateDto';
-export type { BookPostUpdateDto } from './models/BookPostUpdateDto';
+export type { BookPostEditDto } from './models/BookPostEditDto';
+export type { BorrowRequestActionDto } from './models/BorrowRequestActionDto';
+export type { BorrowRequestCreateDto } from './models/BorrowRequestCreateDto';
 export type { CommentCreateDto } from './models/CommentCreateDto';
 export type { LoginRequest } from './models/LoginRequest';
-export type { RefreshTokenRequest } from './models/RefreshTokenRequest';
 export type { RegisterRequest } from './models/RegisterRequest';
 export type { ReplyCreateDto } from './models/ReplyCreateDto';
 
 export { AuthService } from './services/AuthService';
-export { BookLikesService } from './services/BookLikesService';
 export { BookPostsService } from './services/BookPostsService';
-export { CommentsService } from './services/CommentsService';
-export { RepliesService } from './services/RepliesService';
+export { BorrowRequestsService } from './services/BorrowRequestsService';

@@ -2,12 +2,24 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { BookPostCreateDto } from '../models/BookPostCreateDto';
-import type { BookPostUpdateDto } from '../models/BookPostUpdateDto';
+import type { BookLikeCreateDto } from '../models/BookLikeCreateDto';
+import type { BookPostEditDto } from '../models/BookPostEditDto';
+import type { CommentCreateDto } from '../models/CommentCreateDto';
+import type { ReplyCreateDto } from '../models/ReplyCreateDto';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
 export class BookPostsService {
+    /**
+     * @returns any OK
+     * @throws ApiError
+     */
+    public static getApiBookPostsAvailableBooks(): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/BookPosts/available-books',
+        });
+    }
     /**
      * @returns any OK
      * @throws ApiError
@@ -19,48 +31,50 @@ export class BookPostsService {
         });
     }
     /**
-     * @param requestBody
+     * @param formData
      * @returns any OK
      * @throws ApiError
      */
     public static postApiBookPosts(
-        requestBody: BookPostCreateDto,
+        formData: ({
+            BookOwnerId?: string;
+            Title?: string;
+            Genre?: string;
+            ISBN?: string;
+            Language?: string;
+            AvailableFrom?: string;
+            AvailableTo?: string;
+            BorrowPrice?: number;
+        } & {
+            coverImage?: Blob;
+        }),
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/BookPosts',
-            body: requestBody,
-            mediaType: 'application/json',
+            formData: formData,
+            mediaType: 'multipart/form-data',
         });
     }
     /**
      * @param genre
-     * @param minPrice
-     * @param maxPrice
-     * @param language
-     * @param sortBy
-     * @param sortDirection
+     * @param minBorrowPrice
+     * @param maxBorrowPrice
      * @returns any OK
      * @throws ApiError
      */
-    public static getApiBookPostsFilter(
-        genre: string = null,
-        minPrice: number = null,
-        maxPrice: number = null,
-        language: string = null,
-        sortBy: string = null,
-        sortDirection: string = null,
+    public static getApiBookPostsAvailable(
+        genre?: string,
+        minBorrowPrice?: number,
+        maxBorrowPrice?: number,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/BookPosts/filter',
+            url: '/api/BookPosts/available',
             query: {
-                'genre': genre,
-                'minPrice': minPrice,
-                'maxPrice': maxPrice,
-                'language': language,
-                'sortBy': sortBy,
-                'sortDirection': sortDirection,
+                'Genre': genre,
+                'MinBorrowPrice': minBorrowPrice,
+                'MaxBorrowPrice': maxBorrowPrice,
             },
         });
     }
@@ -88,7 +102,7 @@ export class BookPostsService {
      */
     public static putApiBookPosts(
         id: number,
-        requestBody: BookPostUpdateDto,
+        requestBody: BookPostEditDto,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'PUT',
@@ -113,6 +127,99 @@ export class BookPostsService {
             url: '/api/BookPosts/{id}',
             path: {
                 'id': id,
+            },
+        });
+    }
+    /**
+     * @param bookPostId
+     * @returns any OK
+     * @throws ApiError
+     */
+    public static getApiBookPostsComments(
+        bookPostId: number,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/BookPosts/{bookPostId}/comments',
+            path: {
+                'bookPostId': bookPostId,
+            },
+        });
+    }
+    /**
+     * @param requestBody
+     * @returns any OK
+     * @throws ApiError
+     */
+    public static postApiBookPostsComments(
+        requestBody: CommentCreateDto,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/BookPosts/comments',
+            body: requestBody,
+            mediaType: 'application/json',
+        });
+    }
+    /**
+     * @param requestBody
+     * @returns any OK
+     * @throws ApiError
+     */
+    public static postApiBookPostsLikes(
+        requestBody: BookLikeCreateDto,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/BookPosts/likes',
+            body: requestBody,
+            mediaType: 'application/json',
+        });
+    }
+    /**
+     * @param bookPostId
+     * @returns any OK
+     * @throws ApiError
+     */
+    public static getApiBookPostsLikes(
+        bookPostId: number,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/BookPosts/{bookPostId}/likes',
+            path: {
+                'bookPostId': bookPostId,
+            },
+        });
+    }
+    /**
+     * @param requestBody
+     * @returns any OK
+     * @throws ApiError
+     */
+    public static postApiBookPostsReplies(
+        requestBody: ReplyCreateDto,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/BookPosts/replies',
+            body: requestBody,
+            mediaType: 'application/json',
+        });
+    }
+    /**
+     * @param commentId
+     * @returns any OK
+     * @throws ApiError
+     */
+    public static getApiBookPostsCommentsReplies(
+        commentId: number,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/BookPosts/comments/{commentId}/replies',
+            path: {
+                'commentId': commentId,
             },
         });
     }

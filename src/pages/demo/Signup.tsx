@@ -20,7 +20,7 @@ export default function SignupPage() {
       role: formData.get("role") as string || "",
     };
     try {
-      await signup(newUser)
+      await signup(newUser);
     } catch (error) {
       console.error("Signup failed:", error);
     }
