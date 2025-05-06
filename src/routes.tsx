@@ -1,7 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
-import LoginPage from "@/pages/demo/Login";
-import SignupPage from "@/pages/demo/Signup";
-import ExplorePage from "@/pages/BookBrowse";
+import LoginPage from "@/pages/Login";
+import SignupPage from "@/pages/Signup";
+import LandingPage from "@/pages/Landing";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
 const router = createBrowserRouter([
@@ -9,10 +9,10 @@ const router = createBrowserRouter([
     path: "/",
     children: [
       {
-        path: "explore",
+        index: true,
         element: (
           <ProtectedRoute>
-            <ExplorePage />
+            <LandingPage />
           </ProtectedRoute>
         ),
       },

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
     Card,
@@ -11,41 +11,34 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Book, Search } from "lucide-react";
+import { BookPostsService, OpenAPI } from '@/api';
 
-// Mock featured books data
-const featuredBooks = [
-    {
-        id: '1',
-        title: 'The Great Gatsby',
-        author: 'F. Scott Fitzgerald',
-        coverUrl: '/api/placeholder/200/300',
-        description: 'A classic novel exploring themes of decadence and excess in the Jazz Age.'
-    },
-    {
-        id: '2',
-        title: 'To Kill a Mockingbird',
-        author: 'Harper Lee',
-        coverUrl: '/api/placeholder/200/300',
-        description: 'A powerful story addressing issues of race and class in the American South.'
-    },
-    {
-        id: '3',
-        title: '1984',
-        author: 'George Orwell',
-        coverUrl: '/api/placeholder/200/300',
-        description: 'A dystopian social science fiction classic that examines totalitarianism.'
-    },
-    {
-        id: '4',
-        title: 'Pride and Prejudice',
-        author: 'Jane Austen',
-        coverUrl: '/api/placeholder/200/300',
-        description: 'A romantic novel of manners that follows the character development of Elizabeth Bennet.'
-    }
-];
+export interface Book {
+    id: number;
+    title: string;
+    isbn: string;
+    genre: string;
+    language: string;
+    publicationDate: string;
+    availableFrom: string;
+    availableTo: string;
+    borrowPrice: number;
+    isAvailable: boolean;
+    isApprovedByAdmin: boolean;
+    coverImage: string;
+    bookOwnerId: string;
+    bookOwnerName: string;
+}
 
 export default function Home() {
     const [searchQuery, setSearchQuery] = useState('');
+    const [searchResults, setSearchResults] = useState<Book[]>([]);
+
+    useEffect(() => {
+        BookPostsService.getApiBookPostsAvailableBooks().then(posts => {
+            setSearchResults(posts);
+        });
+    }, []);
 
     return (
         <div className="container mx-auto px-4 py-8">
@@ -53,7 +46,9 @@ export default function Home() {
             <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-lg shadow-lg p-8 mb-12 text-white">
                 <div className="max-w-2xl mx-auto text-center">
                     <h1 className="text-4xl font-bold mb-4">BookShare Community</h1>
-                    <p className="text-xl mb-8">Discover, borrow, and share books with people in your community.</p>
+                    <p className="text-xl mb-8">
+                        Discover, borrow, and share books with people in your community.
+                    </p>
 
                     <div className="relative max-w-md mx-auto">
                         <Input
@@ -63,7 +58,10 @@ export default function Home() {
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                        <Search
+                            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                            size={18}
+                        />
                         <Button className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 px-3 py-1">
                             Search
                         </Button>
@@ -74,7 +72,7 @@ export default function Home() {
                             <Link to="/books">Browse Books</Link>
                         </Button>
                         <Button asChild>
-                            <Link to="/register">Join Now</Link>
+                            <Link to="/signup">Join Now</Link>
                         </Button>
                     </div>
                 </div>
@@ -90,23 +88,39 @@ export default function Home() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {featuredBooks.map((book) => (
-                        <Card key={book.id} className="h-full flex flex-col">
-                            <CardHeader className="pb-2">
-                                <div className="flex justify-center">
-                                    <img
-                                        src={book.coverUrl}
-                                        alt={book.title}
-                                        className="h-48 object-cover rounded-md shadow-md"
-                                    />
-                                </div>
+                    {searchResults.map((book) => (
+                        <Card
+                            key={book.id}
+                            className="h-full flex flex-col hover:shadow-lg transition-shadow"
+                        >
+                            <CardHeader className="p-0">
+                                <img
+                                    src={`${OpenAPI.BASE}/${book.coverImage}`}
+                                    alt={book.title}
+                                    className="h-48 w-full object-cover rounded-t-md"
+                                />
                             </CardHeader>
-                            <CardContent className="flex-grow">
-                                <CardTitle className="text-lg">{book.title}</CardTitle>
-                                <CardDescription className="text-sm text-gray-500">{book.author}</CardDescription>
-                                <p className="mt-2 text-sm line-clamp-3">{book.description}</p>
+                            <CardContent className="flex-grow p-4 space-y-1">
+                                <CardTitle className="text-lg font-semibold">
+                                    {book.title}
+                                </CardTitle>
+                                <CardDescription className="text-sm text-gray-500">
+                                    by {book.bookOwnerName}
+                                </CardDescription>
+                                <p className="text-sm text-gray-700">Genre: {book.genre}</p>
+                                <p className="text-sm text-gray-700">
+                                    Language: {book.language}
+                                </p>
+                                <p className="text-sm text-gray-700">
+                                    Price:{" "}
+                                    <span className="font-medium">${book.borrowPrice}</span>
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                    Available until:{" "}
+                                    {new Date(book.availableTo).toLocaleDateString()}
+                                </p>
                             </CardContent>
-                            <CardFooter>
+                            <CardFooter className="p-4 pt-0">
                                 <Button asChild variant="outline" className="w-full">
                                     <Link to={`/books/${book.id}`}>View Details</Link>
                                 </Button>
@@ -125,7 +139,9 @@ export default function Home() {
                             <Book size={32} className="text-blue-700" />
                         </div>
                         <h3 className="text-xl font-semibold mb-2">List Your Books</h3>
-                        <p>Add books you're willing to lend to others in the community.</p>
+                        <p>
+                            Add books you're willing to lend to others in the community.
+                        </p>
                     </div>
                     <div className="text-center">
                         <div className="bg-green-100 p-4 inline-block rounded-full mb-4">
@@ -136,7 +152,18 @@ export default function Home() {
                     </div>
                     <div className="text-center">
                         <div className="bg-purple-100 p-4 inline-block rounded-full mb-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-purple-700">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="32"
+                                height="32"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="text-purple-700"
+                            >
                                 <path d="M17 6.1H3"></path>
                                 <path d="M21 12.1H3"></path>
                                 <path d="M15.1 18H3"></path>
@@ -150,8 +177,13 @@ export default function Home() {
 
             {/* Join Community CTA */}
             <section className="text-center bg-indigo-50 p-8 rounded-lg">
-                <h2 className="text-2xl font-bold mb-4">Join Our Book-Loving Community</h2>
-                <p className="mb-6 max-w-xl mx-auto">Connect with fellow readers, share your favorite books, and discover new titles without spending a fortune.</p>
+                <h2 className="text-2xl font-bold mb-4">
+                    Join Our Book-Loving Community
+                </h2>
+                <p className="mb-6 max-w-xl mx-auto">
+                    Connect with fellow readers, share your favorite books, and discover
+                    new titles without spending a fortune.
+                </p>
                 <div className="flex justify-center gap-4">
                     <Button asChild size="lg">
                         <Link to="/register">Sign Up Now</Link>
