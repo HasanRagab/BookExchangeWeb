@@ -4,7 +4,6 @@
 /* eslint-disable */
 export type ReplyCreateDto = {
     commentId?: number;
-    userId?: string;
     content?: string;
 };
 

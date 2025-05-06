@@ -19,7 +19,7 @@ export default function LoginPage() {
     const data = { email, password };
     try {
       await login(data);
-      navigate("/explore");
+      navigate("/");
     } catch (error) {
       console.error("Login failed:", error);
     }

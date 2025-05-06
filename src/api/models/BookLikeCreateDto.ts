@@ -3,8 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 export type BookLikeCreateDto = {
-    userId?: string;
-    bookPostId?: number;
-    isLiked?: boolean;
+    bookPostId: number;
+    isLiked: boolean;
 };
 

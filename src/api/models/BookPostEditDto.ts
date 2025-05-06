@@ -3,7 +3,6 @@
 /* tslint:disable */
 /* eslint-disable */
 export type BookPostEditDto = {
-    bookOwnerId?: string;
     title?: string;
     genre?: string;
     isbn?: string;
@@ -14,6 +13,5 @@ export type BookPostEditDto = {
     borrowPrice?: number;
     isApprovedByAdmin?: boolean;
     isAvailable?: boolean;
-    isBorrowed?: boolean;
 };
 

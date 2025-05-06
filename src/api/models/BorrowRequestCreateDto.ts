@@ -4,7 +4,6 @@
 /* eslint-disable */
 export type BorrowRequestCreateDto = {
     bookId?: number;
-    borrowerId?: string;
     startDate?: string;
     endDate?: string;
 };

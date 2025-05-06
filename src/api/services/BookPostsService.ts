@@ -5,77 +5,32 @@
 import type { BookLikeCreateDto } from '../models/BookLikeCreateDto';
 import type { BookPostEditDto } from '../models/BookPostEditDto';
 import type { CommentCreateDto } from '../models/CommentCreateDto';
-import type { IFormFile } from '../models/IFormFile';
-import type { ReplyCreateDto } from '../models/ReplyCreateDto';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
 export class BookPostsService {
     /**
+     * @param pageNumber
+     * @param pageSize
+     * @param searchValue
+     * @param sortDirection
      * @returns any OK
      * @throws ApiError
      */
-    public static getApiBookPostsAvailableBooks(): CancelablePromise<any> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/BookPosts/available-books',
-        });
-    }
-    /**
-     * @returns any OK
-     * @throws ApiError
-     */
-    public static getApiBookPosts(): CancelablePromise<any> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/BookPosts',
-        });
-    }
-    /**
-     * @param formData
-     * @returns any OK
-     * @throws ApiError
-     */
-    public static postApiBookPosts(
-        formData: ({
-            BookOwnerId?: string;
-            Title?: string;
-            Genre?: string;
-            ISBN?: string;
-            Language?: string;
-            AvailableFrom?: string;
-            AvailableTo?: string;
-            BorrowPrice?: number;
-        } & {
-            coverImage?: IFormFile;
-        }),
-    ): CancelablePromise<any> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/BookPosts',
-            formData: formData,
-            mediaType: 'multipart/form-data',
-        });
-    }
-    /**
-     * @param genre
-     * @param minBorrowPrice
-     * @param maxBorrowPrice
-     * @returns any OK
-     * @throws ApiError
-     */
-    public static getApiBookPostsAvailable(
-        genre?: string,
-        minBorrowPrice?: number,
-        maxBorrowPrice?: number,
+    public static getApiBookpostsAvailableBooks(
+        pageNumber?: number,
+        pageSize?: number,
+        searchValue?: string,
+        sortDirection?: string,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/BookPosts/available',
+            url: '/api/bookposts/available-books',
             query: {
-                'Genre': genre,
-                'MinBorrowPrice': minBorrowPrice,
-                'MaxBorrowPrice': maxBorrowPrice,
+                'PageNumber': pageNumber,
+                'PageSize': pageSize,
+                'SearchValue': searchValue,
+                'SortDirection': sortDirection,
             },
         });
     }
@@ -84,12 +39,12 @@ export class BookPostsService {
      * @returns any OK
      * @throws ApiError
      */
-    public static getApiBookPosts1(
+    public static getApiBookposts(
         id: number,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/BookPosts/{id}',
+            url: '/api/bookposts/{id}',
             path: {
                 'id': id,
             },
@@ -101,13 +56,13 @@ export class BookPostsService {
      * @returns any OK
      * @throws ApiError
      */
-    public static putApiBookPosts(
+    public static putApiBookposts(
         id: number,
         requestBody: BookPostEditDto,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'PUT',
-            url: '/api/BookPosts/{id}',
+            url: '/api/bookposts/{id}',
             path: {
                 'id': id,
             },
@@ -120,12 +75,12 @@ export class BookPostsService {
      * @returns any OK
      * @throws ApiError
      */
-    public static deleteApiBookPosts(
+    public static deleteApiBookposts(
         id: number,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'DELETE',
-            url: '/api/BookPosts/{id}',
+            url: '/api/bookposts/{id}',
             path: {
                 'id': id,
             },
@@ -136,28 +91,33 @@ export class BookPostsService {
      * @returns any OK
      * @throws ApiError
      */
-    public static getApiBookPostsComments(
+    public static getApiBookpostsComments(
         bookPostId: number,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/BookPosts/{bookPostId}/comments',
+            url: '/api/bookposts/{bookPostId}/comments',
             path: {
                 'bookPostId': bookPostId,
             },
         });
     }
     /**
+     * @param bookPostId
      * @param requestBody
      * @returns any OK
      * @throws ApiError
      */
-    public static postApiBookPostsComments(
+    public static postApiBookpostsComments(
+        bookPostId: number,
         requestBody: CommentCreateDto,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/BookPosts/comments',
+            url: '/api/bookposts/{bookPostId}/comments',
+            path: {
+                'bookPostId': bookPostId,
+            },
             body: requestBody,
             mediaType: 'application/json',
         });
@@ -167,12 +127,12 @@ export class BookPostsService {
      * @returns any OK
      * @throws ApiError
      */
-    public static postApiBookPostsLikes(
+    public static postApiBookpostsLikes(
         requestBody: BookLikeCreateDto,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/BookPosts/likes',
+            url: '/api/bookposts/likes',
             body: requestBody,
             mediaType: 'application/json',
         });
@@ -182,45 +142,14 @@ export class BookPostsService {
      * @returns any OK
      * @throws ApiError
      */
-    public static getApiBookPostsLikes(
+    public static getApiBookpostsLikes(
         bookPostId: number,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/BookPosts/{bookPostId}/likes',
+            url: '/api/bookposts/{bookPostId}/likes',
             path: {
                 'bookPostId': bookPostId,
-            },
-        });
-    }
-    /**
-     * @param requestBody
-     * @returns any OK
-     * @throws ApiError
-     */
-    public static postApiBookPostsReplies(
-        requestBody: ReplyCreateDto,
-    ): CancelablePromise<any> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/BookPosts/replies',
-            body: requestBody,
-            mediaType: 'application/json',
-        });
-    }
-    /**
-     * @param commentId
-     * @returns any OK
-     * @throws ApiError
-     */
-    public static getApiBookPostsCommentsReplies(
-        commentId: number,
-    ): CancelablePromise<any> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/BookPosts/comments/{commentId}/replies',
-            path: {
-                'commentId': commentId,
             },
         });
     }

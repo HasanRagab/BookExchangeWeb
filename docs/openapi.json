@@ -10,7 +10,7 @@
     }
   ],
   "paths": {
-    "/Auth": {
+    "/auth": {
       "post": {
         "tags": ["Auth"],
         "requestBody": {
@@ -40,7 +40,7 @@
         }
       }
     },
-    "/Auth/register": {
+    "/auth/register": {
       "post": {
         "tags": ["Auth"],
         "requestBody": {
@@ -70,111 +70,38 @@
         }
       }
     },
-    "/api/BookPosts/available-books": {
-      "get": {
-        "tags": ["BookPosts"],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/BookPosts": {
-      "get": {
-        "tags": ["BookPosts"],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      },
-      "post": {
-        "tags": ["BookPosts"],
-        "requestBody": {
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "allOf": [
-                  {
-                    "type": "object",
-                    "properties": {
-                      "BookOwnerId": {
-                        "type": "string"
-                      },
-                      "Title": {
-                        "type": "string"
-                      },
-                      "Genre": {
-                        "type": "string"
-                      },
-                      "ISBN": {
-                        "type": "string"
-                      },
-                      "Language": {
-                        "type": "string"
-                      },
-                      "AvailableFrom": {
-                        "type": "string",
-                        "format": "date-time"
-                      },
-                      "AvailableTo": {
-                        "type": "string",
-                        "format": "date-time"
-                      },
-                      "BorrowPrice": {
-                        "type": "number",
-                        "format": "double"
-                      }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "coverImage": {
-                        "$ref": "#/components/schemas/IFormFile"
-                      }
-                    }
-                  }
-                ]
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/BookPosts/available": {
+    "/api/bookposts/available-books": {
       "get": {
         "tags": ["BookPosts"],
         "parameters": [
           {
-            "name": "Genre",
+            "name": "PageNumber",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "SearchValue",
             "in": "query",
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "MinBorrowPrice",
+            "name": "SortDirection",
             "in": "query",
             "schema": {
-              "type": "number",
-              "format": "double"
-            }
-          },
-          {
-            "name": "MaxBorrowPrice",
-            "in": "query",
-            "schema": {
-              "type": "number",
-              "format": "double"
+              "type": "string"
             }
           }
         ],
@@ -185,7 +112,7 @@
         }
       }
     },
-    "/api/BookPosts/{id}": {
+    "/api/bookposts/{id}": {
       "get": {
         "tags": ["BookPosts"],
         "parameters": [
@@ -264,7 +191,97 @@
         }
       }
     },
-    "/api/BookPosts/{bookPostId}/comments": {
+    "/api/bookposts/{bookPostId}/comments": {
+      "get": {
+        "tags": ["BookPosts"],
+        "parameters": [
+          {
+            "name": "bookPostId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "post": {
+        "tags": ["BookPosts"],
+        "parameters": [
+          {
+            "name": "bookPostId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommentCreateDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommentCreateDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommentCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/bookposts/likes": {
+      "post": {
+        "tags": ["BookPosts"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BookLikeCreateDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BookLikeCreateDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/BookLikeCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/bookposts/{bookPostId}/likes": {
       "get": {
         "tags": ["BookPosts"],
         "parameters": [
@@ -285,139 +302,7 @@
         }
       }
     },
-    "/api/BookPosts/comments": {
-      "post": {
-        "tags": ["BookPosts"],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CommentCreateDto"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CommentCreateDto"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/CommentCreateDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/BookPosts/likes": {
-      "post": {
-        "tags": ["BookPosts"],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/BookLikeCreateDto"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/BookLikeCreateDto"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/BookLikeCreateDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/BookPosts/{bookPostId}/likes": {
-      "get": {
-        "tags": ["BookPosts"],
-        "parameters": [
-          {
-            "name": "bookPostId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/BookPosts/replies": {
-      "post": {
-        "tags": ["BookPosts"],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ReplyCreateDto"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ReplyCreateDto"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/ReplyCreateDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/BookPosts/comments/{commentId}/replies": {
-      "get": {
-        "tags": ["BookPosts"],
-        "parameters": [
-          {
-            "name": "commentId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/BorrowRequests/book/{bookId}": {
+    "/api/borrowrequests/book/{bookId}": {
       "get": {
         "tags": ["BorrowRequests"],
         "parameters": [
@@ -438,7 +323,7 @@
         }
       }
     },
-    "/api/BorrowRequests": {
+    "/api/borrowrequests": {
       "post": {
         "tags": ["BorrowRequests"],
         "requestBody": {
@@ -468,8 +353,8 @@
         }
       }
     },
-    "/api/BorrowRequests/{requestId}/action": {
-      "post": {
+    "/api/borrowrequests/{requestId}": {
+      "put": {
         "tags": ["BorrowRequests"],
         "parameters": [
           {
@@ -480,23 +365,40 @@
               "type": "integer",
               "format": "int32"
             }
+          },
+          {
+            "name": "action",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/replies": {
+      "post": {
+        "tags": ["Replies"],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/BorrowRequestActionDto"
+                "$ref": "#/components/schemas/ReplyCreateDto"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/BorrowRequestActionDto"
+                "$ref": "#/components/schemas/ReplyCreateDto"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/BorrowRequestActionDto"
+                "$ref": "#/components/schemas/ReplyCreateDto"
               }
             }
           },
@@ -508,16 +410,35 @@
           }
         }
       }
+    },
+    "/api/replies/comments/{commentId}": {
+      "get": {
+        "tags": ["Replies"],
+        "parameters": [
+          {
+            "name": "commentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
       "BookLikeCreateDto": {
+        "required": ["bookPostId", "isLiked"],
         "type": "object",
         "properties": {
-          "userId": {
-            "type": "string"
-          },
           "bookPostId": {
             "type": "integer",
             "format": "int32"
@@ -530,9 +451,6 @@
       "BookPostEditDto": {
         "type": "object",
         "properties": {
-          "bookOwnerId": {
-            "type": "string"
-          },
           "title": {
             "type": "string"
           },
@@ -566,20 +484,6 @@
           },
           "isAvailable": {
             "type": "boolean"
-          },
-          "isBorrowed": {
-            "type": "boolean"
-          }
-        }
-      },
-      "BorrowRequestActionDto": {
-        "type": "object",
-        "properties": {
-          "action": {
-            "type": "string"
-          },
-          "bookOwnerId": {
-            "type": "string"
           }
         }
       },
@@ -589,9 +493,6 @@
           "bookId": {
             "type": "integer",
             "format": "int32"
-          },
-          "borrowerId": {
-            "type": "string"
           },
           "startDate": {
             "type": "string",
@@ -604,23 +505,13 @@
         }
       },
       "CommentCreateDto": {
+        "required": ["content"],
         "type": "object",
         "properties": {
-          "bookPostId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "userId": {
-            "type": "string"
-          },
           "content": {
             "type": "string"
           }
         }
-      },
-      "IFormFile": {
-        "type": "string",
-        "format": "binary"
       },
       "LoginRequest": {
         "required": ["email", "password"],
@@ -661,9 +552,6 @@
             "type": "integer",
             "format": "int32"
           },
-          "userId": {
-            "type": "string"
-          },
           "content": {
             "type": "string"
           }
@@ -680,6 +568,9 @@
     },
     {
       "name": "BorrowRequests"
+    },
+    {
+      "name": "Replies"
     }
   ]
 }

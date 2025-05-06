@@ -3,8 +3,6 @@
 /* tslint:disable */
 /* eslint-disable */
 export type CommentCreateDto = {
-    bookPostId?: number;
-    userId?: string;
-    content?: string;
+    content: string;
 };
 

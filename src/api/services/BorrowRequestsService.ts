@@ -2,7 +2,6 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { BorrowRequestActionDto } from '../models/BorrowRequestActionDto';
 import type { BorrowRequestCreateDto } from '../models/BorrowRequestCreateDto';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
@@ -13,12 +12,12 @@ export class BorrowRequestsService {
      * @returns any OK
      * @throws ApiError
      */
-    public static getApiBorrowRequestsBook(
+    public static getApiBorrowrequestsBook(
         bookId: number,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/BorrowRequests/book/{bookId}',
+            url: '/api/borrowrequests/book/{bookId}',
             path: {
                 'bookId': bookId,
             },
@@ -29,34 +28,35 @@ export class BorrowRequestsService {
      * @returns any OK
      * @throws ApiError
      */
-    public static postApiBorrowRequests(
+    public static postApiBorrowrequests(
         requestBody: BorrowRequestCreateDto,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/BorrowRequests',
+            url: '/api/borrowrequests',
             body: requestBody,
             mediaType: 'application/json',
         });
     }
     /**
      * @param requestId
-     * @param requestBody
+     * @param action
      * @returns any OK
      * @throws ApiError
      */
-    public static postApiBorrowRequestsAction(
+    public static putApiBorrowrequests(
         requestId: number,
-        requestBody: BorrowRequestActionDto,
+        action?: string,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/BorrowRequests/{requestId}/action',
+            method: 'PUT',
+            url: '/api/borrowrequests/{requestId}',
             path: {
                 'requestId': requestId,
             },
-            body: requestBody,
-            mediaType: 'application/json',
+            query: {
+                'action': action,
+            },
         });
     }
 }

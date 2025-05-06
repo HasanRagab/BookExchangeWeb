@@ -1,7 +1,4 @@
-"use client"
-
 import { useState } from "react"
-import { Link } from "react-router-dom"
 import { BookOpen, Clock, ThumbsUp, ThumbsDown } from "lucide-react"
 import useAuthStore from "@/store/authStore"
 import bookService from "@/services/bookService"
@@ -27,7 +24,7 @@ const BookCard = ({ book }: { book: Book }) => {
     const [likes, setLikes] = useState(book.likes)
     const [dislikes, setDislikes] = useState(book.dislikes)
 
-    const handleLike = async (e) => {
+    const handleLike: (e: React.MouseEvent<HTMLButtonElement>) => Promise<void> = async (e) => {
         e.preventDefault()
         e.stopPropagation()
 
@@ -40,7 +37,11 @@ const BookCard = ({ book }: { book: Book }) => {
 
         setIsLiking(true)
         try {
-            const updatedBook = await bookService.likeBook(book.id)
+            const response = await bookService.likeBook(book.id)
+            const updatedBook: Book = {
+                ...response,
+                borrowStatus: response.borrowStatus === "Available" ? "Available" : "Borrowed",
+            }
             setLikes(updatedBook.likes)
         } catch (error) {
             console.error("Error liking book:", error)
@@ -117,9 +118,9 @@ const BookCard = ({ book }: { book: Book }) => {
                 </div>
             </div>
             <div className="p-4 border-t">
-            <Button className="w-full" onClick={() => alert("Borrowing book...")}>
-                Borrow
-            </Button>
+                <Button className="w-full" onClick={() => alert("Borrowing book...")}>
+                    Borrow
+                </Button>
             </div>
         </div>
     )
