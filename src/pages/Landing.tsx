@@ -10,29 +10,14 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Book } from "lucide-react";
-import { BookPostsService, OpenAPI } from '@/api';
-import { PaginatedResponse } from '@/schemas/pagination';
 import { Loader2 } from 'lucide-react';
-
-export interface Book {
-    id: number;
-    title: string;
-    isbn: string;
-    genre: string;
-    language: string;
-    publicationDate: string;
-    availableFrom: string;
-    availableTo: string;
-    borrowPrice: number;
-    isAvailable: boolean;
-    isApprovedByAdmin: boolean;
-    coverImage: string;
-    bookOwnerId: string;
-    bookOwnerName: string;
-}
+import useAuthStore from '@/store/authStore';
+import api from '@/lib/axios';
+import { BookPostResponseDto } from '@/types/api';
 
 export default function Home() {
-    const [searchResults, setSearchResults] = useState<Book[]>([]);
+    const { user } = useAuthStore();
+    const [searchResults, setSearchResults] = useState<BookPostResponseDto[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -40,9 +25,10 @@ export default function Home() {
         setLoading(true);
         setError(null);
         try {
-            const response: PaginatedResponse<Book> = await BookPostsService.getApiBookpostsAvailableBooks(
-            );
-            setSearchResults(response.items);
+            const data = await api("get", "bookposts/available-books");
+            console.log(data);
+
+            setSearchResults(data.items);
         } catch {
             setError('Failed to fetch books. Please try again.');
         } finally {
@@ -58,7 +44,18 @@ export default function Home() {
         <div className="container mx-auto px-4 py-8">
             <div className="flex items-center justify-between mb-6">
                 <h1 className="text-3xl font-bold">Available Books</h1>
-                <Link to="/login">Login</Link>
+                {
+                    user ? (
+                        <Link to="/books" className="text-blue-500 hover:underline">
+                            <Button variant="outline" className="flex items-center">
+                                <Book className="mr-2" />
+                                View Books
+                            </Button>
+                        </Link>
+                    ) : (
+                        <Link to="/login">Login</Link>
+                    )
+                }
             </div>
 
             {loading && (
@@ -90,11 +87,11 @@ export default function Home() {
                         {searchResults.map((book) => (
                             <Card
                                 key={book.id}
-                                className="h-full flex flex-col hover:shadow-lg transition-shadow"
+                                className="h-full flex flex-col hover:shadow-lg p-0 transition-shadow"
                             >
                                 <CardHeader className="p-0">
                                     <img
-                                        src={`${OpenAPI.BASE}/${book.coverImage}`}
+                                        src={`${import.meta.env.VITE_BACKEND_URL}/${book.coverImage}`}
                                         alt={book.title}
                                         className="h-48 w-full object-cover rounded-t-md"
                                     />

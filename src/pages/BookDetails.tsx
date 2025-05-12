@@ -1,84 +1,116 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { BookPostsService, OpenAPI } from '@/api';
+import { format } from "date-fns";
 import {
     Card,
     CardContent
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsContent, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { CalendarIcon, MessageSquare, ChevronLeft, BookOpen, AlertCircle } from "lucide-react";
+import { CalendarIcon, ChevronLeft, Heart, AlertCircle } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import api from '@/lib/axios';
+import { BookPostResponseDto } from '@/types/api';
+import { cn } from '@/lib/utils';
 
-interface Book {
-    id: number;
-    bookOwnerId: string;
-    bookOwnerName: string;
-    title: string;
-    genre: string;
-    isbn: string;
-    language: string;
-    publicationDate: string;
-    isAvailable: boolean;
-    availableFrom: string;
-    availableTo: string;
-    borrowPrice: number;
-    isApprovedByAdmin: boolean;
-    coverImage: string;
-}
+
 
 export default function BookDetails() {
     const { id } = useParams<{ id: string }>();
-    const [book, setBook] = useState<Book | null>(null);
+    const [book, setBook] = useState<BookPostResponseDto | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [borrowRequestMessage, setBorrowRequestMessage] = useState('');
+    const [timeRange, setTimeRange] = useState<{ startDate?: Date; endDate?: Date }>(
+        {
+            startDate: new Date(),
+            endDate: new Date(new Date().setDate(new Date().getDate() + 7))
+        }
+    );
 
-    useEffect(() => {
-        const fetchBook = async () => {
-            if (!id) return;
+    const fetchBook = useCallback(async () => {
+        if (!id) return;
 
-            setIsLoading(true);
-            try {
-                const response = await BookPostsService.getApiBookposts(Number(id));
-                setBook(response);
-                setError(null);
-            } catch (err) {
-                setError('Failed to fetch book details');
-                console.error('Error fetching book:', err);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchBook();
+        try {
+            const data = await api("get", "bookposts/:id", {
+                params: { id }
+            });
+            setBook(data);
+            console.log(data);
+            setError(null);
+        } catch (err) {
+            setError('Failed to fetch book details');
+            console.error('Error fetching book:', err);
+        }
     }, [id]);
 
-    const handleBorrowRequest = () => {
-        console.log('Borrow request sent:', borrowRequestMessage);
-    };
+    useEffect(() => {
+        setIsLoading(true);
+        fetchBook();
+        setIsLoading(false);
+    }, [fetchBook]);
+
+    const toggleLike = async (bookPostId: number) => {
+        try {
+            await api("post", "bookposts/likes", {
+                data: {
+                    bookPostId,
+                    isLiked: !book?.userHasLiked
+                }
+            });
+            fetchBook();
+        }
+        catch (err) {
+            console.error('Error liking book:', err);
+            setError('Failed to like book');
+        }
+    }
+
+    const sendComment = async (content: string) => {
+        if (!id) return;
+        try {
+            await api("post", "bookposts/:bookPostId/comments", {
+                data: { content },
+                params: { bookPostId: id }
+            });
+            fetchBook();
+        } catch (err) {
+            console.error('Error sending comment:', err);
+            setError('Failed to send comment');
+        }
+    }
+
+    const sendBorrowRequest = async (bookId: number) => {
+        if (!id) return;
+        try {
+            if (!timeRange.startDate || !timeRange.endDate) {
+                setError('Please select a valid date range');
+                return;
+            }
+            console.log({
+                bookId,
+                startDate: timeRange.startDate.toISOString(),
+                endDate: timeRange.endDate.toISOString(),
+            });
+
+            await api("post", "borrowrequests", {
+                data: {
+                    bookId,
+                    startDate: timeRange.startDate.toISOString(),
+                    endDate: timeRange.endDate.toISOString(),
+                },
+            });
+        }
+        catch (err) {
+            console.error('Error sending borrow request:', err);
+            setError('Failed to send borrow request');
+        }
+    }
+
 
     if (isLoading) {
         return (
@@ -102,7 +134,10 @@ export default function BookDetails() {
 
     return (
         <div className="container mx-auto px-4 py-8">
-            <Link to="/books" className="flex items-center text-blue-600 mb-6 hover:underline">
+            <Link
+                to="/books"
+                className="flex items-center text-blue-600 mb-6 hover:underline"
+            >
                 <ChevronLeft size={16} />
                 <span>Back to Books</span>
             </Link>
@@ -112,7 +147,7 @@ export default function BookDetails() {
                     <div className="sticky top-6">
                         <div className="flex justify-center mb-6">
                             <img
-                                src={`${OpenAPI.BASE}/${book.coverImage}`}
+                                src={`${import.meta.env.VITE_BACKEND_URL}/${book.coverImage}`}
                                 alt={book.title}
                                 className="rounded-lg shadow-lg max-h-96"
                             />
@@ -120,83 +155,88 @@ export default function BookDetails() {
 
                         <div className="space-y-4">
                             {book.isAvailable ? (
-                                <Dialog>
-                                    <DialogTrigger asChild>
-                                        <Button className="w-full">Request to Borrow</Button>
-                                    </DialogTrigger>
-                                    <DialogContent className="sm:max-w-[425px]">
-                                        <DialogHeader>
-                                            <DialogTitle>Borrow Request</DialogTitle>
-                                            <DialogDescription>
-                                                Send a message to the book owner with your borrowing request.
-                                            </DialogDescription>
-                                        </DialogHeader>
-                                        <div className="grid gap-4 py-4">
-                                            <Textarea
-                                                placeholder="Hello! I'm interested in borrowing this book..."
-                                                className="min-h-[100px]"
-                                                value={borrowRequestMessage}
-                                                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setBorrowRequestMessage(e.target.value)}
-                                            />
-                                        </div>
-                                        <DialogFooter>
-                                            <Button type="submit" onClick={handleBorrowRequest}>Send Request</Button>
-                                        </DialogFooter>
-                                    </DialogContent>
-                                </Dialog>
-                            ) : (
-                                <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                        <Button className="w-full" variant="outline" disabled>
-                                            <AlertCircle className="mr-2 h-4 w-4" />
-                                            Currently Unavailable
-                                        </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                            <AlertDialogTitle>Book Unavailable</AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                                This book is currently borrowed by another user. You can add it to your wishlist and we'll notify you when it becomes available.
-                                            </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                            <AlertDialogAction>Add to Wishlist</AlertDialogAction>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
-                            )}
+                                <div className="space-y-4">
+                                    <Label className="block text-sm font-medium">Select borrowing date range:</Label>
 
-                            <Button variant="outline" className="w-full">
-                                <MessageSquare className="mr-2 h-4 w-4" />
-                                Contact Owner
-                            </Button>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                className={cn(
+                                                    "w-full justify-start text-left font-normal",
+                                                    !timeRange.startDate || !timeRange.endDate ? "text-muted-foreground" : ""
+                                                )}
+                                            >
+                                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                                {timeRange.startDate && timeRange.endDate
+                                                    ? `${format(timeRange.startDate, "PPP")} - ${format(timeRange.endDate, "PPP")}`
+                                                    : "Pick a date range"}
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0" align="start">
+                                            <Calendar
+                                                mode='range'
+                                                selected={{ from: timeRange.startDate, to: timeRange.endDate }}
+                                                onSelect={(range) => {
+                                                    setTimeRange({
+                                                        startDate: range?.from,
+                                                        endDate: range?.to
+                                                    });
+                                                }
+                                                }
+                                                className="w-auto"
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
+
+                                    <Button
+                                        onClick={() => sendBorrowRequest(book.id)}
+                                        disabled={!timeRange.startDate || !timeRange.endDate}
+                                    >
+                                        Send Request
+                                    </Button>
+                                </div>
+
+                            ) : (
+                                <Button className="w-full" variant="outline" disabled>
+                                    <AlertCircle className="mr-2 h-4 w-4" />
+                                    Currently Unavailable
+                                </Button>
+                            )}
                         </div>
 
                         <Card className="mt-6">
                             <CardContent className="pt-6">
                                 <div className="flex items-center gap-4 mb-4">
                                     <Avatar>
-                                        <AvatarFallback>{book.bookOwnerName.charAt(0)}</AvatarFallback>
+                                        <AvatarFallback>
+                                            {book.bookOwnerName.charAt(0)}
+                                        </AvatarFallback>
                                     </Avatar>
                                     <div>
                                         <h3 className="font-medium">{book.bookOwnerName}</h3>
                                         <div className="flex items-center text-sm text-gray-500">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="gold" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
-                                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                                            </svg>
-                                            N/A • N/A response
+                                            <span className="flex items-center gap-1 text-gray-500">
+                                                <Heart
+                                                    fill={book.userHasLiked ? "red" : "white"}
+                                                    className="h-4 w-4"
+                                                    onClick={() => toggleLike(book.id)}
+                                                />
+                                                <p>{book.totalLikes}</p>
+                                                <p>Likes</p>
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
                                 <div className="text-sm space-y-2">
                                     <div className="flex justify-between">
-                                        <span className="text-gray-500">Location:</span>
-                                        <span>Not specified</span>
-                                    </div>
-                                    <div className="flex justify-between">
                                         <span className="text-gray-500">Borrowing period:</span>
-                                        <span>{`${new Date(book.availableFrom).toLocaleDateString()} - ${new Date(book.availableTo).toLocaleDateString()}`}</span>
+                                        <span>
+                                            {`${format(
+                                                new Date(book.availableFrom),
+                                                "PPP"
+                                            )} - ${format(new Date(book.availableTo), "PPP")}`}
+                                        </span>
                                     </div>
                                     <div className="flex justify-between">
                                         <span className="text-gray-500">Borrow price:</span>
@@ -210,30 +250,82 @@ export default function BookDetails() {
 
                 <div className="md:col-span-2">
                     <div className="mb-4">
-                        <Badge variant="outline" className="mb-2">{book.genre}</Badge>
+                        <Badge variant="outline" className="mb-2">
+                            {book.genre}
+                        </Badge>
                         <h1 className="text-3xl font-bold mb-2">{book.title}</h1>
-                        <h2 className="text-xl text-gray-600 mb-4">by Unknown Author</h2>
-
                         <div className="flex items-center gap-2 mb-6">
-                            <Badge variant={book.isAvailable ? "default" : "destructive"} className="py-1">
+                            <Badge
+                                variant={book.isAvailable ? "default" : "destructive"}
+                                className="py-1"
+                            >
                                 {book.isAvailable ? "Available" : "Currently Borrowed"}
                             </Badge>
                             <span className="text-sm text-gray-500">
-                                <BookOpen className="inline mr-1 h-4 w-4" />
-                                Unknown pages
-                            </span>
-                            <span className="text-sm text-gray-500">
                                 <CalendarIcon className="inline mr-1 h-4 w-4" />
-                                Published {new Date(book.publicationDate).toLocaleDateString()}
+                                Published{" "}
+                                {new Date(book.publicationDate).toLocaleDateString()}
                             </span>
                         </div>
                     </div>
 
                     <Tabs defaultValue="description" className="mb-8">
                         <TabsList>
-                            <TabsTrigger value="description">Description</TabsTrigger>
                             <TabsTrigger value="details">Details</TabsTrigger>
+                            <TabsTrigger value="comments">Comments</TabsTrigger>
                         </TabsList>
+
+                        <TabsContent value="details">
+                            <Card>
+                                <CardContent className="space-y-2">
+                                    <div className="text-sm">
+                                        <Label htmlFor="owner" className="font-semibold">
+                                            Owner
+                                        </Label>
+                                        <p className="mt-2">{book.bookOwnerName}</p>
+                                    </div>
+                                    <div className="text-sm">
+                                        <Label htmlFor="language" className="font-semibold">
+                                            Language
+                                        </Label>
+                                        <p className="mt-2">{book.language}</p>
+                                    </div>
+                                    <div className="text-sm">
+                                        <Label htmlFor="isbn" className="font-semibold">
+                                            ISBN
+                                        </Label>
+                                        <p className="mt-2">{book.isbn}</p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
+                        <TabsContent value="comments">
+                            <Card>
+                                <CardContent className="space-y-2">
+                                    {book.comments.map((comment) => (
+                                        <div
+                                            key={comment.id}
+                                            className="border-b flex gap-2 border-gray-200 pb-2"
+                                        >
+                                            <span className="font-bold">{comment.name}: </span>
+                                            <span className="text-gray-500">{comment.content}</span>
+                                        </div>
+                                    ))}
+                                    <div className="mt-4">
+                                        <Textarea
+                                            placeholder="Leave a comment..."
+                                            className="min-h-[100px]"
+                                            onKeyDown={(e) => {
+                                                if (e.key === "Enter" && !e.shiftKey) {
+                                                    e.preventDefault();
+                                                    sendComment((e.target as HTMLTextAreaElement).value);
+                                                }
+                                            }}
+                                        />
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
                     </Tabs>
                 </div>
             </div>

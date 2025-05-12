@@ -18,8 +18,7 @@ export default function LoginPage() {
     const password = formData.get("password") as string;
     const data = { email, password };
     try {
-      await login(data);
-      navigate("/");
+      await login(data, navigate);
     } catch (error) {
       console.error("Login failed:", error);
     }

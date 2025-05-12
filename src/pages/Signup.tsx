@@ -7,9 +7,10 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import useAuthStore from "@/store/authStore"
 import { useNavigate } from "react-router-dom"
+import { UserRole } from "@/types/api"
 
 export default function SignupPage() {
-  const { signup } = useAuthStore()
+  const { register } = useAuthStore()
   const navigate = useNavigate()
   const handleSignup = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -19,11 +20,11 @@ export default function SignupPage() {
       password: formData.get("password") as string || "",
       firstName: formData.get("firstName") as string || "",
       lastName: formData.get("lastName") as string || "",
-      role: formData.get("role") as string || "",
+      role: formData.get("role") as UserRole
+
     };
     try {
-      await signup(newUser);
-      navigate("/login");
+      await register(newUser, navigate)
     } catch (error) {
       console.error("Signup failed:", error);
     }
@@ -61,11 +62,6 @@ export default function SignupPage() {
               <Label htmlFor="password">Password</Label>
               <Input id="password" name="password" type="password" required />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm password</Label>
-              <Input id="confirmPassword" name="confirmPassword" type="password" required />
-            </div>
-
             <div className="space-y-2">
               <Label htmlFor="role">Role</Label>
               <select id="role" name="role" className="w-full border rounded p-2">
