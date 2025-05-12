@@ -5,6 +5,7 @@ import BookDetailsPage from "./pages/BookDetails";
 import BooksPage from "./pages/Books";
 import LandingPage from "@/pages/Landing";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import AdminDashboard from "./pages/AdminPage";
 
 const router = createBrowserRouter([
   {
@@ -31,6 +32,13 @@ const router = createBrowserRouter([
         ),
       }
     ],
+  },
+  {
+    path: "/admin",
+    element:
+      <ProtectedRoute role="Admin">
+        <AdminDashboard />
+      </ProtectedRoute>,
   },
   {
     path: "/login",
