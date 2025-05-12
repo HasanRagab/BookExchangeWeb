@@ -1,86 +1,97 @@
-import { AuthService, LoginRequest, RegisterRequest } from "@/api";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import toast from "react-hot-toast";
+import api from "@/lib/axios";
+import { RegisterRequest, LoginRequest, MeResponse } from "@/types/api";
+import { useNavigate } from "react-router-dom";
 
 interface AuthState {
-  user: { role: string } | null;
+  user: MeResponse | null;
+  token: string | null;
   isLoading: boolean;
-  error: string | null;
-  isAuthenticated: () => boolean;
-  getUserRole: () => string;
-  isAdmin: () => boolean;
-  isBookOwner: () => boolean;
-  isReader: () => boolean;
-  login: (data: LoginRequest) => Promise<void>;
-  signup: (userData: RegisterRequest) => Promise<void>;
-  logout: () => Promise<void>;
-  clearErrors: () => void;
+
+  login: (
+    data: LoginRequest,
+    navigate: ReturnType<typeof useNavigate>
+  ) => Promise<void>;
+  register: (
+    data: RegisterRequest,
+    navigate: ReturnType<typeof useNavigate>
+  ) => Promise<void>;
+  me: () => Promise<void>;
+
+  setToken: (token: string) => void;
+  clearToken: () => void;
 }
 
 const useAuthStore = create<AuthState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       user: null,
+      token: null,
       isLoading: false,
-      error: null,
 
-      isAuthenticated: () => !!get().user,
+      setToken: (token) => set({ token }),
+      clearToken: () => set({ token: null, user: null }),
 
-      getUserRole: () => get().user?.role || "guest",
-
-      isAdmin: () => get().user?.role === "admin",
-      isBookOwner: () => get().user?.role === "bookOwner",
-      isReader: () => get().user?.role === "reader",
-
-      login: async (data) => {
-        set({ isLoading: true, error: null });
-        try {
-          const user = await AuthService.postAuth(data);
-          set({ user, isLoading: false });
-          return user;
-        } catch (error) {
-          set({
-            error: error instanceof Error ? error.message : String(error),
-            isLoading: false,
-          });
-          throw error;
-        }
-      },
-
-      signup: async (userData) => {
-        set({ isLoading: true, error: null });
-        try {
-          const user = await AuthService.postAuthRegister(userData);
-          set({ user, isLoading: false });
-          return user;
-        } catch (error) {
-          set({
-            error: error instanceof Error ? error.message : String(error),
-            isLoading: false,
-          });
-          throw error;
-        }
-      },
-
-      // Logout
-      logout: async () => {
+      login: async (data, navigate) => {
         set({ isLoading: true });
         try {
-          set({ user: null, isLoading: false, error: null });
-        } catch (error) {
-          set({
-            error: error instanceof Error ? error.message : String(error),
-            isLoading: false,
-          });
+          const res = await api("post", "/auth", { data });
+          const { token, ...user } = res;
+
+          if (!token) throw new Error("No token received");
+
+          set({ token, user });
+          if (user.role === "Admin") {
+            navigate("/admin");
+          } else {
+            navigate("/books");
+          }
+          toast.success("Logged in successfully");
+        } catch (err) {
+          toast.error((err as Error).message || "Login failed");
+        } finally {
+          set({ isLoading: false });
         }
       },
 
-      // Clear errors
-      clearErrors: () => set({ error: null }),
+      register: async (data, navigate) => {
+        set({ isLoading: true });
+        try {
+          const res = await api("post", "/auth/register", { data });
+          const { token, ...user } = res;
+
+          if (data.role === "BookOwner") {
+            toast.success(res.message || "Registration successful");
+            return;
+          }
+
+          set({ token, user });
+          navigate("/login");
+          toast.success("Registered successfully");
+        } catch (err) {
+          toast.error((err as Error).message || "Registration failed");
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      me: async () => {
+        set({ isLoading: true });
+        try {
+          const res = await api("get", "/auth/me");
+          set({ user: res });
+        } catch (err) {
+          toast.error((err as Error).message || "Failed to fetch user data");
+        } finally {
+          set({ isLoading: false });
+        }
+      },
     }),
     {
-      name: "bookSwap-auth-storage",
-      partialize: (state) => ({ user: state.user }),
+      name: "auth-storage",
+      partialize: (state) => ({ token: state.token }),
     }
   )
 );
