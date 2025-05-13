@@ -16,13 +16,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from '@/lib/axios';
-import { BookOwnerBookDto, BookOwnerBorrowRequestDto } from '@/types/api';
+import { BookOwnerBookDto, BookOwnerBookUpdateDto, BookOwnerBorrowRequestDto } from '@/types/api';
 import { toast } from 'react-hot-toast';
 import { CheckIcon, XIcon } from 'lucide-react';
+import EditBookModal from '@/components/EditBookModal';
 
 const BookOwnerDashboard: React.FC = () => {
     const [myBooks, setMyBooks] = useState<BookOwnerBookDto[]>([]);
     const [borrowRequests, setBorrowRequests] = useState<BookOwnerBorrowRequestDto[]>([]);
+    const [editingBook, setEditingBook] = useState<BookOwnerBookDto | null>(null);
 
     const fetchMyBooks = async () => {
         try {
@@ -36,7 +38,6 @@ const BookOwnerDashboard: React.FC = () => {
     const fetchBorrowRequests = async () => {
         try {
             const data = await api('get', 'borrowrequests/bookowner/requests');
-            console.log(data);
             setBorrowRequests(data);
         } catch {
             toast.error('Failed to fetch borrow requests.');
@@ -45,14 +46,54 @@ const BookOwnerDashboard: React.FC = () => {
 
     const handleBorrowRequestAction = async (id: number, accept: boolean) => {
         try {
-            await api('post', 'borrowrequests/requests', {
-                data: { requestId: id, accept }
+            await api('put', 'borrowrequests/:requestId', {
+                query: {
+                    action: accept ? 'Accept' : 'Reject'
+                },
+                params: {
+                    requestId: id
+                }
             });
-
             setBorrowRequests(prev => prev.filter(req => req.id !== id));
             toast.success(`Request ${accept ? 'accepted' : 'rejected'}`);
         } catch {
             toast.error('Failed to update request.');
+        }
+    };
+
+    const handleEditBook = async (id: number, updatedBook: BookOwnerBookUpdateDto) => {
+        try {
+            await api('put', 'bookposts/:bookId', {
+                params: { bookId: id },
+                data: {
+                    title: updatedBook.title,
+                    genre: updatedBook.genre,
+                    isbn: updatedBook.isbn,
+                }
+            });
+
+            setMyBooks(prev => prev.map(book =>
+                book.id === id ? { ...book, ...updatedBook } : book
+            ));
+            setEditingBook(null);
+            toast.success('Book updated successfully');
+        } catch {
+            toast.error('Failed to update book');
+        }
+    };
+
+    const handleDeleteBook = async (bookId: number) => {
+        if (!confirm('Are you sure you want to delete this book?')) return;
+
+        try {
+            await api('delete', 'bookposts/:bookId', {
+                params: { bookId }
+            });
+
+            setMyBooks(prev => prev.filter(book => book.id !== bookId));
+            toast.success('Book deleted successfully');
+        } catch {
+            toast.error('Failed to delete book');
         }
     };
 
@@ -95,10 +136,19 @@ const BookOwnerDashboard: React.FC = () => {
                                                 {book.isApprovedByAdmin ? 'Approved' : 'Pending'}
                                             </TableCell>
                                             <TableCell>
-                                                <Button variant="outline" size="sm">
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => setEditingBook(book)}
+                                                >
                                                     Edit
                                                 </Button>
-                                                <Button variant="destructive" size="sm" className="ml-2">
+                                                <Button
+                                                    variant="destructive"
+                                                    size="sm"
+                                                    className="ml-2"
+                                                    onClick={() => handleDeleteBook(book.id)}
+                                                >
                                                     Delete
                                                 </Button>
                                             </TableCell>
@@ -159,6 +209,19 @@ const BookOwnerDashboard: React.FC = () => {
                     </Card>
                 </TabsContent>
             </Tabs>
+
+            {editingBook && (
+                <EditBookModal
+                    book={editingBook}
+                    isOpen={!!editingBook}
+                    onClose={() => setEditingBook(null)}
+                    onSave={(updatedBook) => {
+                        if (editingBook) {
+                            handleEditBook(editingBook.id, updatedBook);
+                        }
+                    }}
+                />
+            )}
         </div>
     );
 };

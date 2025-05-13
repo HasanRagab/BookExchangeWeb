@@ -162,6 +162,23 @@ export interface BookOwnerBookDto {
   coverImage?: string | null;
 }
 
+export interface BookOwnerBookUpdateDto {
+  title: string;
+  genre: string;
+  isbn: string;
+}
+
+export interface BookPostCreateDto {
+  title: string;
+  genre: string;
+  isbn: string;
+  language: string;
+  availableFrom: string;
+  availableTo: string;
+  borrowPrice: number;
+  coverImage?: File | null;
+}
+
 export interface APIEndpoints {
   "/auth": {
     request: LoginRequest;
@@ -195,6 +212,10 @@ export interface APIEndpoints {
       message: string;
     };
   };
+  bookposts: {
+    request: BookPostCreateDto;
+    response: BookPostResponseDto;
+  };
   "bookposts/available-books": {
     query: QueryAvailableBooksRequest;
     response: PaginatedList<BookPostResponseDto>;
@@ -226,7 +247,14 @@ export interface APIEndpoints {
   "bookposts/bookowner/books": {
     request: void;
     response: BookOwnerBookDto[];
-  },
+  };
+  "bookposts/:bookId": {
+    request: BookOwnerBookUpdateDto;
+    params: {
+      bookId: number;
+    };
+    response: void;
+  };
   "borrowrequests/bookowner/requests": {
     request: void;
     response: BookOwnerBorrowRequestDto[];
@@ -239,11 +267,12 @@ export interface APIEndpoints {
     response: BorrowRequestSummaryDto[];
   };
   "borrowrequests/:requestId": {
-    request: {
-      action: "Accept" | "Reject";
-    };
+    request: void;
     params: {
-      requestId: string;
+      requestId: number;
+    };
+    query: {
+      action: "Accept" | "Reject";
     };
     response: BorrowRequestResponseDto;
   };
