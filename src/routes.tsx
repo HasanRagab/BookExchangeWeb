@@ -1,14 +1,17 @@
 import { createBrowserRouter } from "react-router-dom";
+import { lazy, Suspense } from "react";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import Layout from "./layouts/base";
 import LoginPage from "@/pages/Login";
 import SignupPage from "@/pages/Signup";
-import BookDetailsPage from "./pages/BookDetails";
-import BooksPage from "./pages/Books";
-import LandingPage from "@/pages/Landing";
-import ProtectedRoute from "@/components/ProtectedRoute";
-import AdminDashboard from "./pages/AdminPage";
-import Layout from "./layouts/base";
-import BookOwnerDashboard from "./pages/BookOwnerDashboard";
-import ReaderDashboard from "./pages/ReaderDashboard";
+
+// Lazy-load heavy components
+const LandingPage = lazy(() => import("@/pages/Landing"));
+const BooksPage = lazy(() => import("./pages/Books"));
+const BookDetailsPage = lazy(() => import("./pages/BookDetails"));
+const ReaderDashboard = lazy(() => import("./pages/ReaderDashboard"));
+const BookOwnerDashboard = lazy(() => import("./pages/BookOwnerDashboard"));
+const AdminDashboard = lazy(() => import("./pages/AdminPage"));
 
 const router = createBrowserRouter([
   {
@@ -17,7 +20,11 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <LandingPage />,
+        element: (
+          <Suspense fallback={<div>Loading...</div>}>
+            <LandingPage />
+          </Suspense>
+        ),
       },
     ],
   },
@@ -29,7 +36,9 @@ const router = createBrowserRouter([
         index: true,
         element: (
           <ProtectedRoute>
-            <BooksPage />
+            <Suspense fallback={<div>Loading...</div>}>
+              <BooksPage />
+            </Suspense>
           </ProtectedRoute>
         ),
       },
@@ -37,7 +46,9 @@ const router = createBrowserRouter([
         path: ":id",
         element: (
           <ProtectedRoute>
-            <BookDetailsPage />
+            <Suspense fallback={<div>Loading...</div>}>
+              <BookDetailsPage />
+            </Suspense>
           </ProtectedRoute>
         ),
       },
@@ -51,7 +62,9 @@ const router = createBrowserRouter([
         index: true,
         element: (
           <ProtectedRoute role="Reader">
-            <ReaderDashboard />
+            <Suspense fallback={<div>Loading...</div>}>
+              <ReaderDashboard />
+            </Suspense>
           </ProtectedRoute>
         ),
       },
@@ -65,7 +78,9 @@ const router = createBrowserRouter([
         index: true,
         element: (
           <ProtectedRoute role="BookOwner">
-            <BookOwnerDashboard />
+            <Suspense fallback={<div>Loading...</div>}>
+              <BookOwnerDashboard />
+            </Suspense>
           </ProtectedRoute>
         ),
       },
@@ -79,7 +94,9 @@ const router = createBrowserRouter([
         index: true,
         element: (
           <ProtectedRoute role="Admin">
-            <AdminDashboard />
+            <Suspense fallback={<div>Loading...</div>}>
+              <AdminDashboard />
+            </Suspense>
           </ProtectedRoute>
         ),
       },

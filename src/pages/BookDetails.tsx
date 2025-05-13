@@ -27,10 +27,12 @@ export default function BookDetails() {
     const [error, setError] = useState<string | null>(null);
     const [timeRange, setTimeRange] = useState<{ startDate?: Date; endDate?: Date }>(
         {
-            startDate: new Date(),
-            endDate: new Date(new Date().setDate(new Date().getDate() + 7))
+            startDate: undefined,
+            endDate: undefined
         }
     );
+    const [isCurrentDateInTheRange, setIsCurrentDateInTheRange] = useState<boolean>(false);
+
 
     const fetchBook = useCallback(async () => {
         if (!id) return;
@@ -40,13 +42,23 @@ export default function BookDetails() {
                 params: { id }
             });
             setBook(data);
-            console.log(data);
+
+            setIsCurrentDateInTheRange(
+                new Date() >= new Date(data.availableFrom) && new Date() <= new Date(data.availableTo)
+            );
+
+            if (isCurrentDateInTheRange) {
+                setTimeRange({
+                    startDate: new Date(),
+                    endDate: new Date(new Date().setDate(new Date().getDate() + 7))
+                });
+            }
             setError(null);
         } catch (err) {
             setError('Failed to fetch book details');
             console.error('Error fetching book:', err);
         }
-    }, [id]);
+    }, [id, isCurrentDateInTheRange]);
 
     useEffect(() => {
         setIsLoading(true);
@@ -91,12 +103,6 @@ export default function BookDetails() {
                 setError('Please select a valid date range');
                 return;
             }
-            console.log({
-                bookId,
-                startDate: timeRange.startDate.toISOString(),
-                endDate: timeRange.endDate.toISOString(),
-            });
-
             await api("post", "borrowrequests", {
                 data: {
                     bookId,
@@ -104,6 +110,7 @@ export default function BookDetails() {
                     endDate: timeRange.endDate.toISOString(),
                 },
             });
+            fetchBook();
         }
         catch (err) {
             console.error('Error sending borrow request:', err);
@@ -154,7 +161,7 @@ export default function BookDetails() {
                         </div>
 
                         <div className="space-y-4">
-                            {book.isAvailable && !book.userHasRequested ? (
+                            {(book.isAvailable && isCurrentDateInTheRange) && !book.userHasRequested ? (
                                 <div className="space-y-4">
                                     <Label className="block text-sm font-medium">Select borrowing date range:</Label>
 
@@ -200,7 +207,11 @@ export default function BookDetails() {
                             ) : (
                                 <Button className="w-full" variant="outline" disabled>
                                     <AlertCircle className="mr-2 h-4 w-4" />
-                                    {book.userHasRequested ? "Already requested" : "Currently borrowed"}
+                                    {book.userHasRequested
+                                        ? "You have already requested this book"
+                                        : isCurrentDateInTheRange
+                                            ? "Book is currently borrowed"
+                                            : "Book is not available for borrowing"}
                                 </Button>
                             )}
                         </div>
@@ -250,16 +261,18 @@ export default function BookDetails() {
 
                 <div className="md:col-span-2">
                     <div className="mb-4">
-                        <Badge variant="outline" className="mb-2">
-                            {book.genre}
-                        </Badge>
-                        <h1 className="text-3xl font-bold mb-2">{book.title}</h1>
+                        <div className="flex gap-2 items-center mb-2">
+                            <h1 className="text-3xl font-bold mb-2">{book.title}</h1>
+                            <Badge variant="outline" className="mb-2">
+                                {book.genre}
+                            </Badge>
+                        </div>
                         <div className="flex items-center gap-2 mb-6">
                             <Badge
                                 variant={book.isAvailable ? "default" : "destructive"}
                                 className="py-1"
                             >
-                                {book.isAvailable ? "Available" : "Currently Borrowed"}
+                                {(book.isAvailable && isCurrentDateInTheRange) ? "Available" : "Not Available"}
                             </Badge>
                             <span className="text-sm text-gray-500">
                                 <CalendarIcon className="inline mr-1 h-4 w-4" />

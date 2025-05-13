@@ -184,12 +184,15 @@ const BookOwnerDashboard: React.FC = () => {
                                                     Edit
                                                 </Button>
                                                 <Button
+                                                    disabled={!book.isAvailable}
                                                     variant="destructive"
                                                     size="sm"
                                                     className="ml-2"
                                                     onClick={() => handleDeleteBook(book.id)}
                                                 >
-                                                    Delete
+                                                    {
+                                                        book.isAvailable ? 'Delete' : 'Unavailable'
+                                                    }
                                                 </Button>
                                             </TableCell>
                                         </TableRow>

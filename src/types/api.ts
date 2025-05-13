@@ -179,6 +179,18 @@ export interface BookPostCreateDto {
   coverImage?: File | null;
 }
 
+export interface BorrowedBookByReaderDto {
+  bookId: number;
+  title: string;
+  genre: string;
+  isbn: string;
+  bookOwnerName: string;
+  startDate: string;
+  endDate: string;
+  borrowPrice: number;
+  coverImage?: string | null;
+}
+
 export interface APIEndpoints {
   "/auth": {
     request: LoginRequest;
@@ -230,6 +242,10 @@ export interface APIEndpoints {
   "bookposts/likes": {
     request: LikeBookRequest;
     response: BookLikeResponseDto;
+  };
+  "bookposts/reader/borrowed-books": {
+    request: void;
+    response: BorrowedBookByReaderDto[];
   };
   "bookposts/:bookPostId/comments": {
     request: {

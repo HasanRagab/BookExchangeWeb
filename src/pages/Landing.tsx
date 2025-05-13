@@ -26,8 +26,6 @@ export default function Home() {
         setError(null);
         try {
             const data = await api("get", "bookposts/available-books");
-            console.log(data);
-
             setSearchResults(data.items);
         } catch {
             setError('Failed to fetch books. Please try again.');

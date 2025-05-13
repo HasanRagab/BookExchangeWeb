@@ -49,7 +49,6 @@ export default function Home() {
                     sortDirection: state.sort,
                 }
             });
-            console.log(data);
             setState(prev => ({ ...prev, books: data.items, totalPages: data.totalPages || 1, loading: false }));
         } catch {
             setState(prev => ({ ...prev, error: 'Failed to fetch books.', loading: false }));
