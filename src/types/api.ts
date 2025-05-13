@@ -138,6 +138,30 @@ export interface BorrowRequestCreateDto {
   endDate: string;
 }
 
+export interface BookOwnerBorrowRequestDto {
+  id: number;
+  bookId: number;
+  bookTitle: string;
+  borrowerId: string;
+  borrowerName: string;
+  startDate: string;
+  endDate: string;
+  isAccepted: boolean;
+}
+
+export interface BookOwnerBookDto {
+  id: number;
+  title: string;
+  genre: string;
+  isbn: string;
+  availableFrom: string;
+  availableTo: string;
+  borrowPrice: number;
+  isAvailable: boolean;
+  isApprovedByAdmin: boolean;
+  coverImage?: string | null;
+}
+
 export interface APIEndpoints {
   "/auth": {
     request: LoginRequest;
@@ -199,9 +223,13 @@ export interface APIEndpoints {
     request: BorrowRequestCreateDto;
     response: BorrowRequestResponseDto;
   };
-  "borrowrequests/requests": {
+  "bookposts/bookowner/books": {
     request: void;
-    response: BorrowRequestSummaryDto[];
+    response: BookOwnerBookDto[];
+  },
+  "borrowrequests/bookowner/requests": {
+    request: void;
+    response: BookOwnerBorrowRequestDto[];
   };
   "borrowrequests/book/:bookId": {
     request: void;

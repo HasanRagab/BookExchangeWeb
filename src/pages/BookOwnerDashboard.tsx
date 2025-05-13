@@ -16,17 +16,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from '@/lib/axios';
-import { BookPostResponseDto, BorrowRequestResponseDto } from '@/types/api';
+import { BookOwnerBookDto, BookOwnerBorrowRequestDto } from '@/types/api';
 import { toast } from 'react-hot-toast';
 import { CheckIcon, XIcon } from 'lucide-react';
 
 const BookOwnerDashboard: React.FC = () => {
-    const [myBooks, setMyBooks] = useState<BookPostResponseDto[]>([]);
-    const [borrowRequests, setBorrowRequests] = useState<BorrowRequestResponseDto[]>([]);
+    const [myBooks, setMyBooks] = useState<BookOwnerBookDto[]>([]);
+    const [borrowRequests, setBorrowRequests] = useState<BookOwnerBorrowRequestDto[]>([]);
 
     const fetchMyBooks = async () => {
         try {
-            const data = await api('get', 'borrowrequests/requests');
+            const data = await api('get', 'bookposts/bookowner/books');
             setMyBooks(data);
         } catch {
             toast.error('Failed to fetch your books.');
@@ -35,7 +35,8 @@ const BookOwnerDashboard: React.FC = () => {
 
     const fetchBorrowRequests = async () => {
         try {
-            const data = await api('get', 'borrowrequests/requests');
+            const data = await api('get', 'borrowrequests/bookowner/requests');
+            console.log(data);
             setBorrowRequests(data);
         } catch {
             toast.error('Failed to fetch borrow requests.');
@@ -82,7 +83,6 @@ const BookOwnerDashboard: React.FC = () => {
                                         <TableHead>Title</TableHead>
                                         <TableHead>Genre</TableHead>
                                         <TableHead>Status</TableHead>
-                                        <TableHead>Likes</TableHead>
                                         <TableHead>Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -94,7 +94,6 @@ const BookOwnerDashboard: React.FC = () => {
                                             <TableCell>
                                                 {book.isApprovedByAdmin ? 'Approved' : 'Pending'}
                                             </TableCell>
-                                            <TableCell>{book.totalLikes}</TableCell>
                                             <TableCell>
                                                 <Button variant="outline" size="sm">
                                                     Edit
