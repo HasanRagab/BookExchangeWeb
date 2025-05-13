@@ -16,15 +16,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from '@/lib/axios';
-import { BookOwnerBookDto, BookOwnerBookUpdateDto, BookOwnerBorrowRequestDto } from '@/types/api';
+import { BookOwnerBookDto, BookOwnerBookUpdateDto, BookOwnerBorrowRequestDto, BookPostCreateDto } from '@/types/api';
 import { toast } from 'react-hot-toast';
 import { CheckIcon, XIcon } from 'lucide-react';
 import EditBookModal from '@/components/EditBookModal';
+import CreateBookModal from '@/components/CreateBookModal';
 
 const BookOwnerDashboard: React.FC = () => {
     const [myBooks, setMyBooks] = useState<BookOwnerBookDto[]>([]);
     const [borrowRequests, setBorrowRequests] = useState<BookOwnerBorrowRequestDto[]>([]);
     const [editingBook, setEditingBook] = useState<BookOwnerBookDto | null>(null);
+    const [isCreatingBook, setIsCreatingBook] = useState(false);
 
     const fetchMyBooks = async () => {
         try {
@@ -97,6 +99,39 @@ const BookOwnerDashboard: React.FC = () => {
         }
     };
 
+    const handleCreateBook = async (newBook: BookPostCreateDto) => {
+        try {
+            const formData = new FormData();
+            formData.append('title', newBook.title);
+            formData.append('genre', newBook.genre);
+            formData.append('isbn', newBook.isbn);
+            formData.append('language', newBook.language);
+            formData.append('availableFrom', newBook.availableFrom);
+            formData.append('availableTo', newBook.availableTo);
+            formData.append('borrowPrice', newBook.borrowPrice.toString());
+
+            if (newBook.coverImage) {
+                formData.append('coverImage', newBook.coverImage);
+            }
+
+            const response = await api('post', 'bookposts', {
+                data: {
+                    ...newBook,
+                    coverImage: newBook.coverImage ? newBook.coverImage : null
+                },
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+
+            setMyBooks(prev => [...prev, response]);
+            setIsCreatingBook(false);
+            toast.success('Book created successfully');
+        } catch {
+            toast.error('Failed to create book');
+        }
+    };
+
     useEffect(() => {
         fetchMyBooks();
         fetchBorrowRequests();
@@ -104,7 +139,12 @@ const BookOwnerDashboard: React.FC = () => {
 
     return (
         <div className="p-6 space-y-6">
-            <h1 className="text-3xl font-bold mb-6">Book Owner Dashboard</h1>
+            <div className="flex justify-between items-center">
+                <h1 className="text-3xl font-bold">Book Owner Dashboard</h1>
+                <Button onClick={() => setIsCreatingBook(true)}>
+                    Create New Book
+                </Button>
+            </div>
 
             <Tabs defaultValue="myBooks" className="space-y-4">
                 <TabsList className="grid grid-cols-2 w-full">
@@ -222,6 +262,12 @@ const BookOwnerDashboard: React.FC = () => {
                     }}
                 />
             )}
+
+            <CreateBookModal
+                isOpen={isCreatingBook}
+                onClose={() => setIsCreatingBook(false)}
+                onCreate={handleCreateBook}
+            />
         </div>
     );
 };

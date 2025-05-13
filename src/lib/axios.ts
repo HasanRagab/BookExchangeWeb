@@ -48,14 +48,16 @@ const api = async <T extends keyof APIEndpoints>(
     data?: APIEndpoints[T] extends { request: infer R } ? R : undefined;
     params?: APIEndpoints[T] extends { params: infer P } ? P : undefined;
     query?: APIEndpoints[T] extends { query: infer Q } ? Q : undefined;
+    headers?: Record<string, string>;
   }
 ): Promise<APIEndpoints[T]["response"]> => {
-  const { data, params, query } = options || {};
+  const { data, params, query, headers } = options || {};
   const response = await axiosInstance.request<APIEndpoints[T]["response"]>({
     method,
     url: buildUrl(url, params || {}),
     data,
     params: query,
+    headers,
   });
 
   return response.data;
