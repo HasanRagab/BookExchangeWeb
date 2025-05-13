@@ -31,7 +31,7 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="container flex items-center justify-center min-h-screen py-12 px-4">
+    <div className="flex justify-center w-full py-12 px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-2">

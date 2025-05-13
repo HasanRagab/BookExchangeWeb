@@ -6,14 +6,24 @@ import BooksPage from "./pages/Books";
 import LandingPage from "@/pages/Landing";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import AdminDashboard from "./pages/AdminPage";
+import Layout from "./layouts/base";
+import BookOwnerDashboard from "./pages/BookOwnerDashboard";
+import ReaderDashboard from "./pages/ReaderDashboard";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <LandingPage />,
+    element: <Layout />,
+    children: [
+      {
+        index: true,
+        element: <LandingPage />,
+      },
+    ],
   },
   {
     path: "books",
+    element: <Layout />,
     children: [
       {
         index: true,
@@ -30,15 +40,50 @@ const router = createBrowserRouter([
             <BookDetailsPage />
           </ProtectedRoute>
         ),
-      }
+      },
     ],
   },
   {
-    path: "/admin",
-    element:
-      <ProtectedRoute role="Admin">
-        <AdminDashboard />
-      </ProtectedRoute>,
+    path: "my-library",
+    element: <Layout />,
+    children: [
+      {
+        index: true,
+        element: (
+          <ProtectedRoute role="Reader">
+            <ReaderDashboard />
+          </ProtectedRoute>
+        ),
+      },
+    ],
+  },
+  {
+    path: "my-books",
+    element: <Layout />,
+    children: [
+      {
+        index: true,
+        element: (
+          <ProtectedRoute role="BookOwner">
+            <BookOwnerDashboard />
+          </ProtectedRoute>
+        ),
+      },
+    ],
+  },
+  {
+    path: "admin",
+    element: <Layout />,
+    children: [
+      {
+        index: true,
+        element: (
+          <ProtectedRoute role="Admin">
+            <AdminDashboard />
+          </ProtectedRoute>
+        ),
+      },
+    ],
   },
   {
     path: "/login",

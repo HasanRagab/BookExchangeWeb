@@ -69,6 +69,7 @@ export interface BookPostResponseDto {
   comments: CommentResponseDto[];
   totalLikes: number;
   userHasLiked?: boolean | null;
+  userHasRequested?: boolean | null;
 }
 
 export interface CommentResponseDto {
@@ -197,6 +198,10 @@ export interface APIEndpoints {
   borrowrequests: {
     request: BorrowRequestCreateDto;
     response: BorrowRequestResponseDto;
+  };
+  "borrowrequests/requests": {
+    request: void;
+    response: BorrowRequestSummaryDto[];
   };
   "borrowrequests/book/:bookId": {
     request: void;

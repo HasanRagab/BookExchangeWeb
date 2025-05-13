@@ -19,6 +19,7 @@ interface AuthState {
     navigate: ReturnType<typeof useNavigate>
   ) => Promise<void>;
   me: () => Promise<void>;
+  logout: () => Promise<void>;
 
   setToken: (token: string) => void;
   clearToken: () => void;
@@ -77,13 +78,23 @@ const useAuthStore = create<AuthState>()(
         }
       },
 
+      logout: async () => {
+        set({ isLoading: true });
+        try {
+          set({ token: null, user: null });
+          toast.success("Logged out successfully");
+        } catch (err) {
+          toast.error((err as Error).message || "Logout failed");
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
       me: async () => {
         set({ isLoading: true });
         try {
           const res = await api("get", "/auth/me");
           set({ user: res });
-        } catch (err) {
-          toast.error((err as Error).message || "Failed to fetch user data");
         } finally {
           set({ isLoading: false });
         }

@@ -154,7 +154,7 @@ export default function BookDetails() {
                         </div>
 
                         <div className="space-y-4">
-                            {book.isAvailable ? (
+                            {book.isAvailable && !book.userHasRequested ? (
                                 <div className="space-y-4">
                                     <Label className="block text-sm font-medium">Select borrowing date range:</Label>
 
@@ -200,7 +200,7 @@ export default function BookDetails() {
                             ) : (
                                 <Button className="w-full" variant="outline" disabled>
                                     <AlertCircle className="mr-2 h-4 w-4" />
-                                    Currently Unavailable
+                                    {book.userHasRequested ? "Already requested" : "Currently borrowed"}
                                 </Button>
                             )}
                         </div>
